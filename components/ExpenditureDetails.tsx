@@ -2,6 +2,16 @@ import { StyleSheet, Text, View, ScrollView } from 'react-native';
 import React from 'react';
 
 const ExpenditureDetails = ({ expenditures, total }: any) => {
+    const getPaymentInfo = (mode: string) => {
+    switch (mode.toLowerCase()) {
+      case 'cash':
+        return { icon: '💵', label: 'Cash', color: '#66BB6A' };
+      case 'online':
+        return { icon: '💳', label: 'Online', color: '#42A5F5' };
+      default:
+        return { icon: '❓', label: 'Unknown', color: 'orange' };
+    }
+  };
   return (
     <ScrollView style={styles.container}>
       <Text style={styles.heading}>💸 Expenditure Details</Text>
@@ -12,17 +22,21 @@ const ExpenditureDetails = ({ expenditures, total }: any) => {
         </Text>
       )}
 
-      {expenditures.map((item: any, index: number) => (
-        <View key={index} style={styles.card}>
+      {expenditures.map((item: any, index: number) => {
+        console.log(item)
+         const payment = getPaymentInfo(item.expenditureMode);
+       return (<View key={index} style={styles.card}>
           <Text style={styles.title}>{item.reason}</Text>
           <Text style={styles.text}>💰 Amount: ₹{item.amount}</Text>
           <Text style={styles.text}>📅 Date: {item.date}</Text>
-
+  <Text style={[styles.text, { color: payment.color }]}>
+              {payment.icon} Mode: {payment.label}
+            </Text>
           <View style={styles.statusBox}>
             <Text style={styles.statusText}>📤 Recorded</Text>
           </View>
         </View>
-      ))}
+)})}
 
       {expenditures.length > 0 && (
         <View style={styles.totalBox}>

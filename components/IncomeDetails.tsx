@@ -3,7 +3,6 @@ import React from 'react';
 
 const IncomeDetails = ({ incomes, total }: any) => {
   const getPaymentInfo = (mode: string) => {
-    console.log(mode)
     switch (mode.toLowerCase()) {
       case 'cash':
         return { icon: '💵', label: 'Cash', color: '#66BB6A' };
@@ -25,7 +24,6 @@ const IncomeDetails = ({ incomes, total }: any) => {
       )}
 
       {incomes.map((income: any, index: number) => {
-        console.log(income)
         const payment = getPaymentInfo(income.paymentMode);
         return (
           <View key={index} style={styles.card}>
