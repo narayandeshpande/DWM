@@ -1,4 +1,7 @@
 {
   "name": "practice",
-  "displayName": "practice"
+  "displayName": "practice",
+  "plugins": [
+    "expo-notifications"
+  ]
 }

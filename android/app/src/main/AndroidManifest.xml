@@ -1,6 +1,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <!-- Add this permission -->
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <application
       android:name=".MainApplication"
@@ -10,6 +12,12 @@
       android:allowBackup="false"
       android:theme="@style/AppTheme"
       android:supportsRtl="true">
+
+      <!-- These services & receivers are required for expo-notifications -->
+      <service android:name="expo.modules.notifications.service.NotificationIntentService"/>
+      <receiver android:exported="false" android:name="expo.modules.notifications.service.NotificationReceiver"/>
+      <receiver android:exported="false" android:name="expo.modules.notifications.service.NotificationDismissedReceiver"/>
+
       <activity
         android:name=".MainActivity"
         android:label="@string/app_name"
