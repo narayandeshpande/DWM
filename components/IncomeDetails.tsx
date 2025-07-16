@@ -24,7 +24,8 @@ const IncomeDetails = ({ incomes, total }: any) => {
       )}
 
       {incomes.map((income: any, index: number) => {
-        const payment = getPaymentInfo(income.paymentMode);
+        console.log(income)
+        const payment = getPaymentInfo(income.paymentMode?income.paymentMode:income.paymentStatus);
         return (
           <View key={index} style={styles.card}>
             <Text style={styles.title}>{income.name}</Text>
