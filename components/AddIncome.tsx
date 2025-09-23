@@ -11,11 +11,12 @@ import React, { useContext, useState } from 'react';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { WorkContext } from '../context/WorkContext';
 import { Picker } from '@react-native-picker/picker';
+import AntDesign from 'react-native-vector-icons/AntDesign';
 
 const AddIncome = ({ setIncomeModel }: any) => {
   const [dateAndTime, setDateAndTime] = useState(new Date());
   const [amount, setAmount] = useState('');
-  const[paymentMode,setPaymentMode]=useState('Cash')
+  const [paymentMode, setPaymentMode] = useState('Cash');
   const [name, setName] = useState('');
   const [date, setDate] = useState('');
   const [showPicker, setShowPicker] = useState(false);
@@ -42,7 +43,6 @@ const AddIncome = ({ setIncomeModel }: any) => {
       Alert.alert('Missing Information', 'Please fill out all fields.');
       return;
     }
-
     const newIncome = {
       id: Math.random(),
       name,
@@ -50,12 +50,12 @@ const AddIncome = ({ setIncomeModel }: any) => {
       paymentMode,
       date,
     };
-    console.log(newIncome)
+    console.log(newIncome);
     updateIncome([...incomes, newIncome]);
     setIncomeModel(false);
     setName('');
     setAmount('');
-    setPaymentMode('Cash')
+    setPaymentMode('Cash');
     setDate('');
   };
 
@@ -64,71 +64,63 @@ const AddIncome = ({ setIncomeModel }: any) => {
       <View style={styles.modal}>
         <Text style={styles.title}>Add Income</Text>
 
-        <TextInput
-          placeholder="Income Source"
-          placeholderTextColor="#888"
-          style={styles.input}
-          value={name}
-          onChangeText={setName}
-        />
+        <View style={styles.inputWrapper}>
+          <AntDesign name="profile" size={20} color="#888" style={styles.icon} />
+          <TextInput
+            placeholder="Income Source"
+            placeholderTextColor="#888"
+            style={styles.input}
+            value={name}
+            onChangeText={setName}
+          />
+        </View>
 
-        <TextInput
-          placeholder="Amount"
-          placeholderTextColor="#888"
-          keyboardType="numeric"
-          style={styles.input}
-          value={amount}
-          onChangeText={setAmount}
-        />
+        <View style={styles.inputWrapper}>
+          <AntDesign name="creditcard" size={20} color="#888" style={styles.icon} />
+          <TextInput
+            placeholder="Amount"
+            placeholderTextColor="#888"
+            keyboardType="numeric"
+            style={styles.input}
+            value={amount}
+            onChangeText={setAmount}
+          />
+        </View>
 
-      <View
-      style={styles.picker}
-      >
+        <View style={styles.pickerWrapper}>
+          <AntDesign name="swap" size={20} color="#888" style={styles.icon} />
           <Picker
-        selectedValue={paymentMode}
-        onValueChange={(itemValue)=>setPaymentMode(itemValue)}
-        // style={styles.picker}
-        >
-          <Picker.Item
-          label='Cash'
-          value='Cash'
-          />
-          <Picker.Item
-          label='Online'
-          value='Online'
-          />
-        </Picker>
-        
-      </View>
+            selectedValue={paymentMode}
+            onValueChange={(itemValue) => setPaymentMode(itemValue)}
+            style={styles.picker}
+            dropdownIconColor="#888"
+          >
+            <Picker.Item label="Cash" value="Cash" />
+            <Picker.Item label="Online" value="Online" />
+          </Picker>
+        </View>
 
-        <TouchableOpacity style={styles.input} onPress={() => showMode('date')}>
+        <TouchableOpacity style={[styles.inputWrapper,{padding:20}]} onPress={() => showMode('date')}>
+          <AntDesign name="calendar" size={20} color={date ? '#fff' : '#888'} style={styles.icon} />
           <Text style={date ? styles.inputText : styles.inputPlaceholder}>
             {date || 'Select Date'}
           </Text>
         </TouchableOpacity>
 
         <View style={styles.buttonRow}>
-          <Pressable
-            style={[styles.button, { backgroundColor: '#4CAF50' }]}
-            onPress={handleAddIncome}
-          >
+          <Pressable style={[styles.button, { backgroundColor: '#4CAF50' }]} onPress={handleAddIncome}>
+            <AntDesign name="pluscircle" size={20} color="#fff" style={{ marginRight: 8 }} />
             <Text style={styles.buttonText}>Add</Text>
           </Pressable>
-          <Pressable
-            style={[styles.button, { backgroundColor: '#F44336' }]}
-            onPress={() => setIncomeModel(false)}
-          >
+
+          <Pressable style={[styles.button, { backgroundColor: '#F44336' }]} onPress={() => setIncomeModel(false)}>
+            <AntDesign name="closecircleo" size={20} color="#fff" style={{ marginRight: 8 }} />
             <Text style={styles.buttonText}>Cancel</Text>
           </Pressable>
         </View>
 
         {showPicker && (
-          <DateTimePicker
-            value={dateAndTime}
-            mode={mode}
-            display="default"
-            onChange={onChange}
-          />
+          <DateTimePicker value={dateAndTime} mode={mode} display="default" onChange={onChange} />
         )}
       </View>
     </View>
@@ -137,17 +129,7 @@ const AddIncome = ({ setIncomeModel }: any) => {
 
 export default AddIncome;
 
-
 const styles = StyleSheet.create({
-  picker: { 
-    height: 50, 
-    width: '100%' ,
-    backgroundColor: '#2C2C2E',
-    marginBottom:10,
-    borderRadius:10
-
-  
-  },
   overlay: {
     flex: 1,
     justifyContent: 'center',
@@ -171,12 +153,19 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 20,
   },
-  input: {
+  inputWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: '#2C2C2E',
-    padding: 12,
     borderRadius: 10,
     marginBottom: 14,
+    paddingHorizontal: 12,
+  },
+  input: {
+    flex: 1,
     color: '#fff',
+    paddingVertical: 12,
+    fontSize: 16,
   },
   inputPlaceholder: {
     color: '#888',
@@ -186,6 +175,21 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
   },
+  icon: {
+    marginRight: 12,
+  },
+  pickerWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#2C2C2E',
+    borderRadius: 10,
+    marginBottom: 14,
+    paddingHorizontal: 8,
+  },
+  picker: {
+    flex: 1,
+    color: '#fff',
+  },
   buttonRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -194,9 +198,11 @@ const styles = StyleSheet.create({
   },
   button: {
     flex: 1,
+    flexDirection: 'row',
     paddingVertical: 12,
     borderRadius: 10,
     alignItems: 'center',
+    justifyContent: 'center',
   },
   buttonText: {
     color: '#fff',

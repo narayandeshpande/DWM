@@ -9,9 +9,7 @@ import NoteCard from '../components/NoteCard'
 const Note = () => {
   const [show, setShow] = useState(false)
   const [note, setNote] = useState(null)
-
   const { notes, getAllNotes } = useContext(WorkContext)
-
 
   useEffect(() => {
     getAllNotes()
@@ -22,23 +20,24 @@ const Note = () => {
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.heading}>Notes</Text>
-        <Text style={styles.count}>{notes.length}</Text>
+        <View style={styles.counterContainer}>
+          <Text style={styles.count}>{notes.length}</Text>
+        </View>
       </View>
 
-      {/* Placeholder for list of notes */}
+      {/* Notes List */}
       <ScrollView contentContainerStyle={styles.noteList}>
-        {
-          notes.map((note, index) => (
-            <TouchableOpacity key={index}
-              onPress={() => {
-                setShow(true)
-                setNote(note)
-              }}
-            >
-              <NoteCard note={note} />
-            </TouchableOpacity>
-          ))
-        }
+        {notes.map((note, index) => (
+          <TouchableOpacity key={index}
+            onPress={() => {
+              setShow(true)
+              setNote(note)
+            }}
+            style={styles.noteItem}
+          >
+            <NoteCard note={note} />
+          </TouchableOpacity>
+        ))}
       </ScrollView>
 
       {/* Floating Add Button */}
@@ -46,10 +45,9 @@ const Note = () => {
         onPress={() => {
           setShow(true)
           setNote(null)
-
         }}
       >
-        <AntDesign name="pluscircle" size={60} color="#4fc5c5" />
+        <AntDesign name="pluscircle" size={56} color="#00e0b7" style={styles.fabIcon} />
       </TouchableOpacity>
 
       <Modal
@@ -59,7 +57,6 @@ const Note = () => {
         onRequestClose={() => setShow(false)}
       >
         <AddNoteModal setModalVisible={setShow} note={note} />
-
       </Modal>
     </SafeAreaView>
   )
@@ -72,44 +69,62 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#121212',
   },
-  count: {
-    color: 'white',
-    marginBottom: 10
-  },
   header: {
-    paddingHorizontal: 20,
-    paddingTop: 50,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 26,
+    paddingTop: 40,
+    paddingBottom: 18,
   },
   heading: {
-    color: '#FFFF',
-    fontSize: 35,
-    fontFamily: 'ARIAL',
-    fontWeight: 'bold',
+    color: '#fff',
+    fontSize: 32,
+    fontWeight: '800',
+    letterSpacing: 0.2,
+  },
+  counterContainer: {
+    backgroundColor: '#23272f',
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOpacity: 0.12,
+    shadowRadius: 4,
+  },
+  count: {
+    color: '#00e0b7',
+    fontSize: 18,
+    fontWeight: '700',
   },
   noteList: {
-    padding: 10,
     flexDirection: "row",
     flexWrap: "wrap",
     justifyContent: "space-between",
-
+    paddingHorizontal: 10,
+    paddingBottom: 90,
+    gap: 8,
   },
-  noteCard: {
-    backgroundColor: '#1e1e1e',
-    marginVertical: 8,
-    marginHorizontal: 20,
-    padding: 15,
-    borderRadius: 10,
-    alignSelf: 'flex-end', // aligns to the right
-    maxWidth: '80%',
-  },
-  noteText: {
-    color: 'white',
-    fontSize: 16,
+  noteItem: {
+    width: '48%',  // Two items per row with some spacing
+    marginBottom: 12,
   },
   fab: {
     position: 'absolute',
     right: 20,
-    bottom: 30,
-    zIndex: 10,
+    bottom: 38,
+    backgroundColor: '#23272f',
+    borderRadius: 40,
+    elevation: 8,
+    shadowColor: "#00e0b7",
+    shadowOffset: { width: 0, height: 5 },
+    shadowOpacity: 0.28,
+    shadowRadius: 8,
+    width: 62,
+    height: 62,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
+  fabIcon: {},
 })

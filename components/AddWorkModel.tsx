@@ -12,6 +12,7 @@ import {
 import React, { useContext, useState } from 'react';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { WorkContext } from '../context/WorkContext';
+import AntDesign from 'react-native-vector-icons/AntDesign';
 
 const AddWorkModel = ({ setModelVisible, data, edit }: any) => {
   const [dateAndTime, setDateAndTime] = useState(new Date());
@@ -19,15 +20,16 @@ const AddWorkModel = ({ setModelVisible, data, edit }: any) => {
   const [time, setTime] = useState(data ? data.time : '');
   const [name, setName] = useState(data ? data.name : '');
   const [address, setAddress] = useState(data ? data.address : '');
-  const [money,setMoney]=useState(data?data.money:"")
-  const [who_has_it,setWho_has_it]=useState(data?data.who_has_it:"")
+  const [money, setMoney] = useState(data ? data.money : '');
+  const [who_has_it, setWho_has_it] = useState(data ? data.who_has_it : '');
   const [showPicker, setShowPicker] = useState(false);
   const [mode, setMode] = useState<'date' | 'time'>('date');
+
   const { allWorks, updateAllWorks }: any = useContext(WorkContext);
 
   const showMode = (current: 'date' | 'time') => {
-    setShowPicker(true);
     setMode(current);
+    setShowPicker(true);
   };
 
   const onChange = (event: any, selectedDate: any) => {
@@ -44,7 +46,7 @@ const AddWorkModel = ({ setModelVisible, data, edit }: any) => {
     setShowPicker(false);
   };
 
-  const handleAddWork = async () => {
+  const handleAddWork = () => {
     if (!name || !date || !time || !address) {
       Alert.alert('Missing Fields', 'Please fill out all fields.');
       return;
@@ -60,33 +62,30 @@ const AddWorkModel = ({ setModelVisible, data, edit }: any) => {
       money,
       completed: false,
       canceled: false,
-      paymentStatus:'pending'
+      paymentStatus: 'pending',
     };
-    console.log(newWork)
+
     updateAllWorks([...allWorks, newWork]);
     resetForm();
   };
 
-  const handleEditWork = async () => {
+  const handleEditWork = () => {
     const updatedWork = allWorks.map((ele: any) =>
-      ele.id === data.id
-        ? { ...ele, name, date, time, address,who_has_it,money }
-        : ele
+      ele.id === data.id ? { ...ele, name, date, time, address, who_has_it, money } : ele
     );
     updateAllWorks(updatedWork);
     Alert.alert('Success', 'Work updated successfully');
     resetForm();
   };
 
-  
   const resetForm = () => {
     setModelVisible(false);
     setName('');
     setAddress('');
     setDate('');
     setTime('');
-    setWho_has_it('')
-    setMoney('')
+    setWho_has_it('');
+    setMoney('');
   };
 
   return (
@@ -97,44 +96,60 @@ const AddWorkModel = ({ setModelVisible, data, edit }: any) => {
       <View style={styles.modalContent}>
         <Text style={styles.modalTitle}>{edit ? 'Edit Work' : 'Add Your Work'}</Text>
 
-        <TextInput
-          placeholder="Name"
-          value={name}
-          onChangeText={setName}
-          style={styles.input}
-          placeholderTextColor="#888"
-        />
+        <View style={styles.inputWrapper}>
+          <AntDesign name="profile" size={20} color="#888" style={styles.icon} />
+          <TextInput
+            placeholder="Name"
+            value={name}
+            onChangeText={setName}
+            style={styles.input}
+            placeholderTextColor="#888"
+          />
+        </View>
 
-        <TextInput
-          placeholder="Who has it?"
-          value={who_has_it}
-          onChangeText={setWho_has_it}
-          style={styles.input}
-          placeholderTextColor="#888"
-        />
-        <TextInput
-          placeholder="Address"
-          value={address}
-          onChangeText={setAddress}
-          style={styles.input}
-          placeholderTextColor="#888"
-        />
-        <TextInput
-          placeholder="Money"
-          value={money}
-          keyboardType="numeric"
-          onChangeText={setMoney}
-          style={styles.input}
-          placeholderTextColor="#888"
-        />
+        <View style={styles.inputWrapper}>
+          <AntDesign name="user" size={20} color="#888" style={styles.icon} />
+          <TextInput
+            placeholder="Who has it?"
+            value={who_has_it}
+            onChangeText={setWho_has_it}
+            style={styles.input}
+            placeholderTextColor="#888"
+          />
+        </View>
 
-        <TouchableOpacity style={styles.input} onPress={() => showMode('date')}>
+        <View style={styles.inputWrapper}>
+          <AntDesign name="home" size={20} color="#888" style={styles.icon} />
+          <TextInput
+            placeholder="Address"
+            value={address}
+            onChangeText={setAddress}
+            style={styles.input}
+            placeholderTextColor="#888"
+          />
+        </View>
+
+        <View style={styles.inputWrapper}>
+          <AntDesign name="money" size={20} color="#888" style={styles.icon} />
+          <TextInput
+            placeholder="Money"
+            value={money}
+            keyboardType="numeric"
+            onChangeText={setMoney}
+            style={styles.input}
+            placeholderTextColor="#888"
+          />
+        </View>
+
+        <TouchableOpacity style={[styles.inputWrapper, styles.pickerTouchable]} onPress={() => showMode('date')}>
+          <AntDesign name="calendar" size={20} color={date ? '#fff' : '#888'} style={styles.icon}/>
           <Text style={date ? styles.inputTextDark : styles.inputPlaceholder}>
             {date || 'Select Date'}
           </Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.input} onPress={() => showMode('time')}>
+        <TouchableOpacity style={[styles.inputWrapper, styles.pickerTouchable]} onPress={() => showMode('time')}>
+          <AntDesign name="clockcircleo" size={20} color={time ? '#fff' : '#888'} style={styles.icon} />
           <Text style={time ? styles.inputTextDark : styles.inputPlaceholder}>
             {time || 'Select Time'}
           </Text>
@@ -145,6 +160,7 @@ const AddWorkModel = ({ setModelVisible, data, edit }: any) => {
             style={[styles.button, { backgroundColor: '#4CAF50' }]}
             onPress={edit ? handleEditWork : handleAddWork}
           >
+            <AntDesign name={edit ? "edit" : "pluscircle"} size={20} color="#fff" style={{ marginRight: 8 }} />
             <Text style={styles.buttonText}>{edit ? 'Update' : 'Add'}</Text>
           </Pressable>
 
@@ -152,6 +168,7 @@ const AddWorkModel = ({ setModelVisible, data, edit }: any) => {
             style={[styles.button, { backgroundColor: '#FF5252' }]}
             onPress={() => setModelVisible(false)}
           >
+            <AntDesign name="closecircleo" size={20} color="#fff" style={{ marginRight: 8 }} />
             <Text style={styles.buttonText}>Cancel</Text>
           </Pressable>
         </View>
@@ -170,7 +187,6 @@ const AddWorkModel = ({ setModelVisible, data, edit }: any) => {
 };
 
 export default AddWorkModel;
-
 
 const styles = StyleSheet.create({
   modalOverlay: {
@@ -196,12 +212,19 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     textAlign: 'center',
   },
-  input: {
+  inputWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: '#2C2C2E',
-    padding: 12,
     borderRadius: 10,
     marginBottom: 14,
+    paddingHorizontal: 12,
+  },
+  input: {
+    flex: 1,
     color: 'white',
+    paddingVertical: 12,
+    fontSize: 16,
   },
   inputPlaceholder: {
     color: '#888',
@@ -211,16 +234,25 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontSize: 16,
   },
+  icon: {
+    marginRight: 12,
+  },
+  pickerTouchable: {
+    paddingVertical: 12,
+  },
   buttonRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    gap: 10,
+    gap: 12,
+    marginTop: 10,
   },
   button: {
     flex: 1,
+    flexDirection: 'row',
     paddingVertical: 12,
     borderRadius: 10,
     alignItems: 'center',
+    justifyContent: 'center',
   },
   buttonText: {
     color: 'white',

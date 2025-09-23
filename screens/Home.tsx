@@ -1,56 +1,85 @@
-import { Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native'
+import { Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View, Platform } from 'react-native'
 import React, { useContext, useEffect, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import WorkCard from '../components/WorkCard'
 import AntDesign from 'react-native-vector-icons/AntDesign'
-import AddWorkModel from '../components/AddWorkModel'
 import { WorkContext } from '../context/WorkContext'
+import DateTimePicker from '@react-native-community/datetimepicker'
+
+type workType = {
+        id: number;
+        name: string;
+        date: string;
+        time: string;
+        address: string;
+        completed: boolean;
+        canceled: boolean;
+};
 
 const Home = () => {
-        const [modelVisible, setModelVisible] = useState(false)
-        const { penddingWorks, }: any = useContext(WorkContext)
-        penddingWorks.sort((a: string, b: string) => a.date.localeCompare(b.date));
 
+        const [selectedDate, setSelectedDate] = useState<Date | null>(new Date())
+        const [showPicker, setShowPicker] = useState(false)
+        const [date, setDate] = useState<string | undefined>(new Date().toISOString().split('T')[0])
+        const [todaysPendingWorks, setTodaysPendingWorks] = useState<workType[]>([])
+        const { penddingWorks }: any = useContext(WorkContext)
 
-        const handelAddWorkButton = () => {
-                setModelVisible(true)
-        }
+        penddingWorks.sort((a: string, b: string) => a.date.localeCompare(b.date))
+        
+
+        const onChange = (event: any, date: any) => {
+                if (event.type === 'set') {
+                        const current = date || selectedDate;
+                        setSelectedDate(current);
+                        const onlyDate = current.toISOString().split('T')[0];
+                        setDate(onlyDate)
+                }
+                setShowPicker(false);
+        };
+
+        useEffect(() => {
+                if (!date) return;
+                const todays = penddingWorks.filter((work: any) => work.date === date);
+                setTodaysPendingWorks(todays);
+        }, [date, penddingWorks]);
+
 
         return (
                 <SafeAreaView style={styles.main}>
-
-                        {/* <InputWithDropdown/> */}
-
+                        {/* Header */}
                         <View style={styles.header}>
                                 <Text style={styles.heading}>Works</Text>
+
+                                {/* Date Picker Button */}
+                                <TouchableOpacity
+                                        style={styles.dateInput}
+                                        onPress={() => setShowPicker(true)}
+                                >
+                                        <Text style={styles.dateText}>
+                                                {selectedDate ? selectedDate.toISOString().split('T')[0] : 'Select Date'}
+                                        </Text>
+                                </TouchableOpacity>
                         </View>
-                        <Text style={styles.count}>{penddingWorks.length}</Text>
+
+                        <Text style={styles.count}>{todaysPendingWorks.length}</Text>
 
                         <ScrollView>
-
-                                {
-                                        penddingWorks.map((ele: any, index: number) => (
-                                                <WorkCard key={index} data={ele} />
-                                        ))
-                                }
+                                {todaysPendingWorks && todaysPendingWorks.map((ele: any, index: number) => (
+                                        <WorkCard key={index} data={ele} />
+                                ))}
                         </ScrollView>
-                        <TouchableOpacity style={styles.fab}
-                                onPress={handelAddWorkButton}
-                        >
-                                <AntDesign name="pluscircle" size={60} color="#4fc5c5" />
-                        </TouchableOpacity>
 
 
-                        <Modal
-                                animationType="slide"
-                                transparent={true}
-                                visible={modelVisible}
-                                onRequestClose={() => setModelVisible(false)}
-                        >
-                                <AddWorkModel setModelVisible={setModelVisible} edit={false} />
-                        </Modal>
+                        {/* DateTime Picker */}
+                        {showPicker && (
+                                <DateTimePicker
+                                        value={selectedDate || new Date()}
+                                        mode="date"
+                                        display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                                        onChange={onChange}
+                                />
+                        )}
                 </SafeAreaView>
-
         )
 }
 
@@ -64,12 +93,27 @@ const styles = StyleSheet.create({
         header: {
                 paddingHorizontal: 20,
                 paddingTop: 50,
+                flexDirection: 'row',
+                justifyContent: 'space-between',
+                alignItems: 'center'
         },
         heading: {
                 color: "#FFFF",
                 fontSize: 35,
                 fontFamily: "ARIAL",
                 fontWeight: "bold",
+        },
+        dateInput: {
+                backgroundColor: '#1e1e1e',
+                borderWidth: 1,
+                borderColor: '#4fc5c5',
+                borderRadius: 8,
+                paddingVertical: 6,
+                paddingHorizontal: 10,
+        },
+        dateText: {
+                color: 'white',
+                fontSize: 14,
         },
         count: {
                 color: 'white',
@@ -81,46 +125,5 @@ const styles = StyleSheet.create({
                 right: 20,
                 bottom: 30,
                 zIndex: 10
-        },
-
-        input: {
-                backgroundColor: '#f1f1f1',
-                padding: 10,
-                borderRadius: 8,
-                marginBottom: 12,
-                width: '90%',
-                color: "black"
-        },
-        modalOverlay: {
-                flex: 1,
-                justifyContent: 'center',
-                backgroundColor: 'rgba(0,0,0,0.6)',
-                padding: 15,
-        },
-        modalContent: {
-                backgroundColor: '#424646',
-                borderRadius: 12,
-                padding: 20,
-        },
-        modalTitle: {
-                fontSize: 20,
-                marginBottom: 12,
-                textAlign: 'center',
-                fontWeight: 'bold',
-                color: "white"
-        },
-        modalButtons: {
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-        },
-        modalButton: {
-                paddingVertical: 10,
-                paddingHorizontal: 20,
-                borderRadius: 8,
-                marginTop: 10,
-        },
-        modalButtonText: {
-                color: 'white',
-                fontWeight: 'bold',
         },
 })

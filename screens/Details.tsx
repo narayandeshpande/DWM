@@ -61,15 +61,15 @@ const Details = () => {
                                 visible={visible}
                                 onRequestClose={() => setVisible(false)}
                         >
-                                {showWorkDetails && 
-                                   <MonthGrid detailType={"work"}/> 
+                                {showWorkDetails &&
+                                        <MonthGrid detailType={"work"} />
                                 }
-                                {showIncomeDetails && 
-                                <MonthGrid detailType={"income"}/> 
+                                {showIncomeDetails &&
+                                        <MonthGrid detailType={"income"} />
                                 }
-                                {showExpenditureDetails && 
-                                
-                                <MonthGrid detailType={"expenditure"}/> 
+                                {showExpenditureDetails &&
+
+                                        <MonthGrid detailType={"expenditure"} />
                                 }
 
                         </Modal>
@@ -99,15 +99,16 @@ const styles = StyleSheet.create({
         },
         buttons: {
                 margin: 5,
-                padding: 10,
+                padding: 20,
                 color: "white",
                 fontWeight: "bold",
-                borderRadius: 5,
-                width: "45%",
+                borderRadius: 10,
+                width: "60%",
                 alignItems: "center"
         },
         buttonText: {
-                color: "white",
-                fontWeight: "bold"
+                color: '#FFF',
+                fontWeight: 'bold',
+                fontSize: 14,
         }
 })

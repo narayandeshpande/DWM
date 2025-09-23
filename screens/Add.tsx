@@ -1,101 +1,112 @@
-import { Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
-import React, { useState } from 'react'
-import { SafeAreaView } from 'react-native-safe-area-context'
-import AddExpenditure from '../components/AddExpenditure'
-import AddIncome from '../components/AddIncome'
+import { Modal, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React, { useState } from 'react';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import AddExpenditure from '../components/AddExpenditure';
+import AddIncome from '../components/AddIncome';
+import AddWorkModel from '../components/AddWorkModel';
 
 const Add = () => {
-        const [incomeModel, setIncomeModel] = useState(false)
-        const [expenditureModel, setExpenditureModel] = useState(false)
+  const [incomeModal, setIncomeModal] = useState(false);
+  const [expenditureModal, setExpenditureModal] = useState(false);
+  const [workModal, setWorkModal] = useState(false);
 
-        const handelAddIncome = () => {
-                setIncomeModel(true)
-        }
+  const handleAddIncome = () => setIncomeModal(true);
+  const handleAddExpenditure = () => setExpenditureModal(true);
+  const handleAddWork = () => setWorkModal(true);
 
-        const handelAddExpenditure = () => {
-                setExpenditureModel(true)
-        }
+  return (
+    <SafeAreaView style={styles.main}>
+      <Text style={styles.heading}>Add Your Income, Expenditure & Work</Text>
 
-        return (
-                <SafeAreaView style={styles.main}>
-                        <View><Text style={styles.heading}>ADD Your Income & Expenditure</Text></View>
-                        <View style={styles.container}>
-                                <TouchableOpacity
-                                        style={[styles.button, { backgroundColor: "#589B3C" }]}
-                                        onPress={handelAddIncome}
-                                >
-                                        <Text style={styles.text}>
-                                                Add Income
-                                        </Text>
-                                </TouchableOpacity>
+      <View style={styles.container}>
+        <TouchableOpacity
+          style={[styles.button, { backgroundColor: '#589B3C' }]}
+          onPress={handleAddIncome}
+        >
+          <Text style={styles.buttonText}>Add Income</Text>
+        </TouchableOpacity>
 
-                                <TouchableOpacity
-                                        style={[styles.button, { backgroundColor: "#DF3437" }]}
-                                        onPress={handelAddExpenditure}
-                                >
-                                        <Text style={styles.text}>
-                                                Add Expenditure
-                                        </Text>
-                                </TouchableOpacity>
-                        </View>
+        <TouchableOpacity
+          style={[styles.button, { backgroundColor: '#6946A9' }]}
+          onPress={handleAddWork}
+        >
+          <Text style={styles.buttonText}>Add Work</Text>
+        </TouchableOpacity>
 
-                        <Modal
-                                animationType='slide'
-                                transparent={true}
-                                visible={incomeModel}
-                                onRequestClose={() => setIncomeModel(false)}
-                        >
-                                <AddIncome setIncomeModel={setIncomeModel}/>
-                        </Modal>
+        <TouchableOpacity
+          style={[styles.button, { backgroundColor: '#DF3437' }]}
+          onPress={handleAddExpenditure}
+        >
+          <Text style={styles.buttonText}>Add Expenditure</Text>
+        </TouchableOpacity>
+      </View>
 
-                        
+      {/* Income Modal */}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={incomeModal}
+        onRequestClose={() => setIncomeModal(false)}
+      >
+        <AddIncome setIncomeModel={setIncomeModal} />
+      </Modal>
 
-                        <Modal
-                                animationType='slide'
-                                transparent={true}
-                                visible={expenditureModel}
-                                onRequestClose={() => setExpenditureModel(false)}
-                        >
-                                <AddExpenditure setExpenditureModel={setExpenditureModel}/>
-                        </Modal>
+      {/* Expenditure Modal */}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={expenditureModal}
+        onRequestClose={() => setExpenditureModal(false)}
+      >
+        <AddExpenditure setExpenditureModel={setExpenditureModal} />
+      </Modal>
 
+      {/* Work Modal */}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={workModal}
+        onRequestClose={() => setWorkModal(false)}
+      >
+        <AddWorkModel setModelVisible={setWorkModal} edit={false} />
+      </Modal>
+    </SafeAreaView>
+  );
+};
 
-                </SafeAreaView>
-        )
-}
-
-export default Add
+export default Add;
 
 const styles = StyleSheet.create({
-        main: {
-                flex: 1,
-                backgroundColor: '#121212'
-        },
-        heading: {
-                color: "#FFFF",
-                fontSize: 30,
-                fontFamily: "ARIAL",
-                fontWeight: "bold",
-                paddingLeft: 20,
-                paddingTop: 50
-        },
-        container: {
-                flex: 1,
-                justifyContent: "center",
-                alignItems: "center"
-        },
-        button: {
-                width: "40%",
-                margin: 10,
-                padding: 10,
-                alignItems: "center",     // horizontally center text
-                justifyContent: "center", // vertically center text
-                borderRadius: 5,          // optional: make it look nicer
-        },
-        text: {
-                color: "white",
-                fontWeight: "bold",
-                fontSize:15
-        }
-
-})
+  main: {
+    flex: 1,
+    backgroundColor: '#121212',
+    paddingTop: 50,
+    paddingHorizontal: 20,
+  },
+  heading: {
+    color: '#FFF',
+    fontSize: 25,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 40,
+  },
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  button: {
+    width: '60%',
+    marginVertical: 10,
+    paddingVertical: 15,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    elevation: 3, // adds shadow on Android
+  },
+  buttonText: {
+    color: '#FFF',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+});

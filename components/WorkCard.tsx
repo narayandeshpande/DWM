@@ -5,13 +5,40 @@ import {
   Text,
   TouchableOpacity,
   View,
+  Dimensions,
 } from 'react-native';
 import React, { useContext, useState } from 'react';
 import AddWorkModel from './AddWorkModel';
 import { WorkContext } from '../context/WorkContext';
 import InputWithDropdown from './InputWithDropdown';
+import AntDesign from 'react-native-vector-icons/AntDesign';
+import LinearGradient from 'react-native-linear-gradient';
+type workType = {
+  id: number;
+  name: string;
+  date: string;
+  time: string;
+  address: string;
+  completed: boolean;
+  canceled: boolean;
+};
 
-const WorkCard = ({ data }: any) => {
+const { height } = Dimensions.get('window');
+
+const GradientButton = ({ colors, onPress, iconName, title }) => (
+  <TouchableOpacity
+    onPress={onPress}
+    activeOpacity={0.85}
+    style={{ flex: 1, borderRadius: 10, overflow: 'hidden' }}
+  >
+    <LinearGradient colors={colors} style={styles.button}>
+      <AntDesign name={iconName} size={18} color="white" />
+      <Text style={styles.buttonText}>{title}</Text>
+    </LinearGradient>
+  </TouchableOpacity>
+);
+
+const WorkCard = ({ data }: workType) => {
   const [modelVisible, setModelVisible] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
   const { allWorks, updateAllWorks, updateIncome, incomes }: any =
@@ -19,7 +46,7 @@ const WorkCard = ({ data }: any) => {
 
   // ✅ Compare work date with today's date
   const isTodayOrPast = (workDate: string) => {
-    const today = new Date().toISOString().split('T')[0]; // "YYYY-MM-DD"
+    const today = new Date().toISOString().split('T')[0];
     const formattedWorkDate = new Date(workDate).toISOString().split('T')[0];
     return today >= formattedWorkDate;
   };
@@ -34,7 +61,6 @@ const WorkCard = ({ data }: any) => {
           paymentStatus: paymentStatus,
         };
 
-        // If payment is not pending, add income entry
         if (paymentStatus !== 'pending') {
           const newIncome = {
             id: Math.random(),
@@ -63,114 +89,145 @@ const WorkCard = ({ data }: any) => {
   };
 
   return (
-    <View style={styles.wrapper}>
-      <View style={styles.card}>
-        <Text style={styles.title}>{data.name}</Text>
-        <Text style={styles.subtext}>📍 {data.address}</Text>
-        <Text style={styles.subtext}>📅 {data.date}</Text>
-        <Text style={styles.subtext}>⏰ {data.time}</Text>
-        <Text style={styles.subtext}>❓ {data.who_has_it}</Text>
-        <Text style={styles.subtext}>💵 ₹{data.money}</Text>
+    <>
+      {
+        data ? <View style={styles.wrapper}>
+          <LinearGradient colors={['#1C1C1C', '#121212']} style={styles.card}>
+            {/* Title */}
+            <View style={styles.headerRow}>
+              <AntDesign name="profile" size={22} color="#FFD54F" />
+              <Text style={styles.title}>{data?.name ?? ""}</Text>
+            </View>
 
-        {/* Payment Status Badge */}
-        <View
-          style={[
-            styles.badgeContainer,
-            {
-              backgroundColor:
-                data.paymentStatus === 'pending' ? '#FFF3E0' : '#E8F5E9',
-            },
-          ]}
-        >
-          <Text
-            style={[
-              styles.badgeText,
-              {
-                color:
-                  data.paymentStatus === 'pending' ? '#FB8C00' : '#43A047',
-              },
-            ]}
-          >
-            {data.paymentStatus === 'pending'
-              ? '⏳ Payment Pending'
-              : '✅ Payment Received'}
-          </Text>
-        </View>
+            {/* Info */}
+            <View style={styles.infoRow}>
+              <AntDesign name="enviromento" size={16} color="#FF7043" />
+              <Text style={styles.subtext}>{data?.address ?? ""}</Text>
+            </View>
+            <View style={styles.infoRow}>
+              <AntDesign name="calendar" size={16} color="#66BB6A" />
+              <Text style={styles.subtext}>{data?.date ?? ""}</Text>
+            </View>
+            <View style={styles.infoRow}>
+              <AntDesign name="clockcircleo" size={16} color="#29B6F6" />
+              <Text style={styles.subtext}>{data?.time ?? ""}</Text>
+            </View>
+            <View style={styles.infoRow}>
+              <AntDesign name="user" size={16} color="#AB47BC" />
+              <Text style={styles.subtext}>{data?.who_has_it ?? ""}</Text>
+            </View>
+            <View style={styles.infoRow}>
+              <AntDesign name="wallet" size={16} color="#FFB300" />
+              <Text style={styles.subtext}>₹{data?.money ?? ""}</Text>
+            </View>
 
-        {/* Work Status */}
-        <View style={styles.status}>
-          {data.completed && (
-            <Text style={[styles.statusText, { color: '#4CAF50' }]}>
-              ✅ Work Completed
-            </Text>
-          )}
-          {data.canceled && (
-            <Text style={[styles.statusText, { color: '#F44336' }]}>
-              ❌ Work Cancelled
-            </Text>
-          )}
-          {!data.completed && !data.canceled && (
-            <Text style={[styles.statusText, { color: '#FFC107' }]}>
-              🕒 Work Pending
-            </Text>
-          )}
-        </View>
-
-        {/* Action Buttons */}
-        <View style={styles.buttonRow}>
-          {/* ✅ Only show Complete button if date is today or past and work not done */}
-          {isTodayOrPast(data.date) && !data.completed && !data.canceled && (
-            <TouchableOpacity
-              style={[styles.button, { backgroundColor: '#4CAF50' }]}
-              onPress={() => setShowAlert(true)}
+            {/* Payment Status Badge */}
+            <View
+              style={[
+                styles.badgeContainer,
+                {
+                  backgroundColor:
+                    data?.paymentStatus ?? null === 'pending' ? '#FFF3E0' : '#E8F5E9',
+                },
+              ]}
             >
-              <Text style={styles.buttonText}>Complete</Text>
-            </TouchableOpacity>
-          )}
+              <AntDesign
+                name={
+                  data?.paymentStatus ?? null === 'pending'
+                    ? 'exclamationcircle'
+                    : 'checkcircle'
+                }
+                size={14}
+                color={data?.paymentStatus ?? null === 'pending' ? '#FB8C00' : '#43A047'}
+              />
+              <Text
+                style={[
+                  styles.badgeText,
+                  {
+                    color:
+                      data?.paymentStatus ?? null === 'pending' ? '#FB8C00' : '#43A047',
+                  },
+                ]}
+              >
+                {data?.paymentStatus ?? null === 'pending'
+                  ? 'Payment Pending'
+                  : 'Payment Received'}
+              </Text>
+            </View>
 
-          <TouchableOpacity
-            style={[styles.button, { backgroundColor: '#F44336' }]}
-            onPress={handleCancelWork}
+            {/* Work Status */}
+            <View style={styles.status}>
+              {(data?.completed ?? null) && (
+                <Text style={[styles.statusText, { color: '#4CAF50' }]}>
+                  ✅ Work Completed
+                </Text>
+              )}
+              {(data?.canceled ?? null) && (
+                <Text style={[styles.statusText, { color: '#F44336' }]}>
+                  ❌ Work Cancelled
+                </Text>
+              )}
+              {!(data?.completed ?? "") && !(data?.canceled ?? "") && (
+                <Text style={[styles.statusText, { color: '#FFC107' }]}>
+                  🕒 Work Pending
+                </Text>
+              )}
+            </View>
+
+            {/* Action Buttons */}
+            <View style={styles.buttonRow}>
+              {isTodayOrPast(data?.date ?? null) && !(data?.completed ?? "") && !(data?.canceled ?? "") && (
+                <GradientButton
+                  colors={['#66bb6a', '#43a047']}
+                  onPress={() => setShowAlert(true)}
+                  iconName="check"
+                  title="Complete"
+                />
+              )}
+
+              <GradientButton
+                colors={['#e53935', '#b71c1c']}
+                onPress={handleCancelWork}
+                iconName="close"
+                title="Cancel"
+              />
+
+              <GradientButton
+                colors={['#1e88e5', '#1565c0']}
+                onPress={() => setModelVisible(true)}
+                iconName="edit"
+                title="Edit"
+              />
+            </View>
+          </LinearGradient>
+
+          {/* Edit Modal */}
+          <Modal
+            animationType="slide"
+            transparent={true}
+            visible={modelVisible}
+            onRequestClose={() => setModelVisible(false)}
           >
-            <Text style={styles.buttonText}>Cancel</Text>
-          </TouchableOpacity>
+            <AddWorkModel setModelVisible={setModelVisible} data={data} edit={true} />
+          </Modal>
 
-          <TouchableOpacity
-            style={[styles.button, { backgroundColor: '#2196F3' }]}
-            onPress={() => setModelVisible(true)}
+          {/* Dropdown Modal */}
+          <Modal
+            animationType="fade"
+            transparent={true}
+            visible={showAlert}
+            onRequestClose={() => setShowAlert(false)}
           >
-            <Text style={styles.buttonText}>Edit</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
+            <InputWithDropdown
+              onClose={() => setShowAlert(false)}
+              handleCompleteWork={handleCompleteWork}
+            />
+          </Modal>
+        </View> :
+          <Text>Work not awalable</Text>
+      }
 
-      {/* Edit Modal */}
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={modelVisible}
-        onRequestClose={() => setModelVisible(false)}
-      >
-        <AddWorkModel
-          setModelVisible={setModelVisible}
-          data={data}
-          edit={true}
-        />
-      </Modal>
-
-      {/* Dropdown Modal (like Alert) */}
-      <Modal
-        animationType="fade"
-        transparent={true}
-        visible={showAlert}
-        onRequestClose={() => setShowAlert(false)}
-      >
-        <InputWithDropdown
-          onClose={() => setShowAlert(false)}
-          handleCompleteWork={handleCompleteWork}
-        />
-      </Modal>
-    </View>
+    </>
   );
 };
 
@@ -179,64 +236,91 @@ export default WorkCard;
 const styles = StyleSheet.create({
   wrapper: {
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: 16,
   },
   card: {
-    backgroundColor: '#1E1E1E',
     width: '92%',
-    padding: 16,
-    borderRadius: 14,
-    elevation: 5,
+    minHeight: height * 0.55, // covers ~55% of screen height
+    padding: 22,
+    borderRadius: 20,
+    backgroundColor: '#121212',
+    elevation: 10,
     shadowColor: '#000',
-    shadowOpacity: 0.25,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 4,
+    shadowOpacity: 0.4,
+    shadowOffset: { width: 0, height: 6 },
+    shadowRadius: 8,
+  },
+  headerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 14,
+    gap: 10,
   },
   title: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: '#ffffff',
-    marginBottom: 6,
+    fontSize: 24,
+    fontWeight: '800',
+    color: '#FFD54F',
+  },
+  infoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginVertical: 4,
   },
   subtext: {
-    color: '#CCCCCC',
-    fontSize: 14,
-    marginVertical: 1,
+    color: '#BBBBBB',
+    fontSize: 16,
   },
   badgeContainer: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    borderRadius: 20,
     alignSelf: 'flex-start',
-    marginTop: 6,
-    marginBottom: 4,
+    marginTop: 12,
   },
   badgeText: {
-    fontSize: 13,
-    fontWeight: '600',
+    fontSize: 15,
+    fontWeight: '700',
   },
   status: {
-    marginTop: 10,
-    marginBottom: 8,
+    marginTop: 18,
+    marginBottom: 14,
   },
   statusText: {
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: 'bold',
   },
   buttonRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     gap: 8,
-    marginTop: 12,
+    marginTop: 22,
   },
+
   button: {
     flex: 1,
-    paddingVertical: 10,
-    borderRadius: 8,
+    paddingVertical: 14,
+    paddingHorizontal: 5, // ⬅️ more space for text
+    // margin:10,
+    borderRadius: 16,
     alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 1,
+    elevation: 6,
+    shadowColor: '#000',
+    shadowOpacity: 0.35,
+    shadowOffset: { width: 0, height: 5 },
+    shadowRadius: 6,
   },
+
   buttonText: {
     color: 'white',
-    fontWeight: '600',
+    fontWeight: '700',
+    fontSize: 12,
+    flexShrink: 1,        // ⬅️ ensures text shrinks gracefully if too long
+    textAlign: 'center',  // ⬅️ center align
   },
 });

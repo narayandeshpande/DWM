@@ -1,46 +1,66 @@
 import { StyleSheet, Text, View, ScrollView } from 'react-native';
 import React from 'react';
+import AntDesign from 'react-native-vector-icons/AntDesign';
 
 const ExpenditureDetails = ({ expenditures, total }: any) => {
-    const getPaymentInfo = (mode: string) => {
+
+  // Sort expenditures by date (newest first)
+  const sortedExpenditures = [...expenditures].sort((a, b) => {
+    return new Date(b.date).getTime() - new Date(a.date).getTime();
+  });
+
+  const getPaymentInfo = (mode: string) => {
     switch (mode.toLowerCase()) {
       case 'cash':
-        return { icon: '💵', label: 'Cash', color: '#66BB6A' };
+        return { icon: <AntDesign name="wallet" size={16} color="#66BB6A" />, label: 'Cash', color: '#66BB6A' };
       case 'online':
-        return { icon: '💳', label: 'Online', color: '#42A5F5' };
+        return { icon: <AntDesign name="creditcard" size={16} color="#42A5F5" />, label: 'Online', color: '#42A5F5' };
       default:
-        return { icon: '❓', label: 'Unknown', color: 'orange' };
+        return { icon: <AntDesign name="questioncircleo" size={16} color="orange" />, label: 'Unknown', color: 'orange' };
     }
   };
+
   return (
     <ScrollView style={styles.container}>
-      <Text style={styles.heading}>💸 Expenditure Details</Text>
+      <View style={styles.headingRow}>
+        <AntDesign name="pay-circle1" size={26} color="#FFB74D" />
+        <Text style={styles.heading}>Expenditure Details</Text>
+      </View>
 
-      {expenditures.length === 0 && (
+      {sortedExpenditures.length === 0 && (
         <Text style={styles.textCenter}>
           No Expenditure Details are available in this month.
         </Text>
       )}
 
-      {expenditures.map((item: any, index: number) => {
-        console.log(item)
-         const payment = getPaymentInfo(item.expenditureMode);
-       return (<View key={index} style={styles.card}>
-          <Text style={styles.title}>{item.reason}</Text>
-          <Text style={styles.text}>💰 Amount: ₹{item.amount}</Text>
-          <Text style={styles.text}>📅 Date: {item.date}</Text>
-  <Text style={[styles.text, { color: payment.color }]}>
+      {sortedExpenditures.map((item: any, index: number) => {
+        const payment = getPaymentInfo(item.expenditureMode);
+
+        return (
+          <View key={index} style={styles.card}>
+            <Text style={styles.title}>{item.reason}</Text>
+            <Text style={styles.text}>
+              <AntDesign name="dollar" size={14} color="#EF9A9A" /> Amount: ₹{item.amount}
+            </Text>
+            <Text style={styles.text}>
+              <AntDesign name="calendar" size={14} color="#90CAF9" /> Date: {item.date}
+            </Text>
+            <Text style={[styles.text, { color: payment.color }]}>
               {payment.icon} Mode: {payment.label}
             </Text>
-          <View style={styles.statusBox}>
-            <Text style={styles.statusText}>📤 Recorded</Text>
-          </View>
-        </View>
-)})}
 
-      {expenditures.length > 0 && (
+            <View style={styles.statusBox}>
+              <AntDesign name="checkcircle" size={14} color="#fff" />
+              <Text style={styles.statusText}> Recorded</Text>
+            </View>
+          </View>
+        );
+      })}
+
+      {sortedExpenditures.length > 0 && (
         <View style={styles.totalBox}>
-          <Text style={styles.totalText}>🧾 Total Spent: ₹{total}</Text>
+          <AntDesign name="barschart" size={16} color="#EF9A9A" />
+          <Text style={styles.totalText}> Total Spent: ₹{total}</Text>
         </View>
       )}
     </ScrollView>
@@ -48,6 +68,7 @@ const ExpenditureDetails = ({ expenditures, total }: any) => {
 };
 
 export default ExpenditureDetails;
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -55,11 +76,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 15,
     paddingTop: 20,
   },
+  headingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 15,
+  },
   heading: {
     fontSize: 26,
     fontWeight: 'bold',
     color: '#ffffff',
-    marginBottom: 15,
+    marginLeft: 8,
   },
   textCenter: {
     color: '#AAAAAA',
@@ -88,6 +114,8 @@ const styles = StyleSheet.create({
     color: '#CCCCCC',
     fontSize: 15,
     marginBottom: 4,
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   statusBox: {
     marginTop: 10,
@@ -95,24 +123,29 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     paddingVertical: 5,
     paddingHorizontal: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
     alignSelf: 'flex-start',
   },
   statusText: {
     color: '#ffffff',
     fontWeight: '600',
     fontSize: 13,
+    marginLeft: 4,
   },
   totalBox: {
     marginTop: 10,
-    paddingVertical: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
     borderTopWidth: 1,
     borderColor: '#333',
-    alignItems: 'center',
+    paddingVertical: 12,
     paddingBottom: 30,
   },
   totalText: {
     fontSize: 18,
     fontWeight: 'bold',
     color: '#EF9A9A',
+    marginLeft: 6,
   },
 });
