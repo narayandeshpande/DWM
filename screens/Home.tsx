@@ -2,7 +2,6 @@ import { Modal, ScrollView, StyleSheet, Text, TouchableOpacity, View, Platform }
 import React, { useContext, useEffect, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import WorkCard from '../components/WorkCard'
-import AntDesign from 'react-native-vector-icons/AntDesign'
 import { WorkContext } from '../context/WorkContext'
 import DateTimePicker from '@react-native-community/datetimepicker'
 
@@ -17,14 +16,14 @@ type workType = {
 };
 
 const Home = () => {
-
+        
         const [selectedDate, setSelectedDate] = useState<Date | null>(new Date())
         const [showPicker, setShowPicker] = useState(false)
         const [date, setDate] = useState<string | undefined>(new Date().toISOString().split('T')[0])
         const [todaysPendingWorks, setTodaysPendingWorks] = useState<workType[]>([])
-        const { penddingWorks }: any = useContext(WorkContext)
+        const { allWorks }: any = useContext(WorkContext)
 
-        penddingWorks.sort((a: string, b: string) => a.date.localeCompare(b.date))
+        allWorks.sort((a: string, b: string) => a.date.localeCompare(b.date))
         
 
         const onChange = (event: any, date: any) => {
@@ -39,9 +38,9 @@ const Home = () => {
 
         useEffect(() => {
                 if (!date) return;
-                const todays = penddingWorks.filter((work: any) => work.date === date);
+                const todays = allWorks.filter((work: any) => work.date === date);
                 setTodaysPendingWorks(todays);
-        }, [date, penddingWorks]);
+        }, [date, allWorks]);
 
 
         return (

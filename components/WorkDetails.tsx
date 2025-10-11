@@ -5,17 +5,38 @@ import {
   ScrollView,
   TouchableOpacity,
   Modal,
+  Alert,
 } from 'react-native';
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import InputWithDropdown from './InputWithDropdown';
 import AntDesign from 'react-native-vector-icons/AntDesign';
+import { WorkContext } from '../context/WorkContext';
 
 const WorkDetails = ({ allWorks }: any) => {
   const [showAlert, setShowAlert] = useState(false);
   const [element, setElement] = useState(null);
+  const { deleteWork } = useContext(WorkContext);
 
   const handleUpdatePayment = (item: any) => {
     setElement(item);
+  };
+
+  const handleDelete = (item: any) => {
+    Alert.alert(
+      'Delete Work',
+      'Are you sure you want to delete this work?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: () => {
+            deleteWork(item)
+          },
+        },
+      ],
+      { cancelable: true }
+    );
   };
 
   useEffect(() => {
@@ -25,16 +46,28 @@ const WorkDetails = ({ allWorks }: any) => {
   const getPaymentDisplay = (status: string) => {
     switch (status) {
       case 'cash':
-        return { icon: <AntDesign name="wallet" size={16} color="#66BB6A" />, text: 'Cash', color: '#66BB6A' };
+        return {
+          icon: <AntDesign name="wallet" size={16} color="#66BB6A" />,
+          text: 'Cash',
+          color: '#66BB6A',
+        };
       case 'online':
-        return { icon: <AntDesign name="creditcard" size={16} color="#42A5F5" />, text: 'Online', color: '#42A5F5' };
+        return {
+          icon: <AntDesign name="creditcard" size={16} color="#42A5F5" />,
+          text: 'Online',
+          color: '#42A5F5',
+        };
       case 'pending':
       default:
-        return { icon: <AntDesign name="clockcircleo" size={16} color="orange" />, text: 'Pending', color: 'orange' };
+        return {
+          icon: <AntDesign name="clockcircleo" size={16} color="orange" />,
+          text: 'Pending',
+          color: 'orange',
+        };
     }
   };
 
-  // Sort works by date (earliest first)
+  // Sort works by date (newest first)
   const sortedWorks = [...allWorks].sort(
     (a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime()
   );
@@ -63,16 +96,19 @@ const WorkDetails = ({ allWorks }: any) => {
             </View>
 
             <Text style={styles.text}>
-              <AntDesign name="pushpin" size={14} color="#FF8A65" /> {ele.address}
+              <AntDesign name="pushpin" size={14} color="#FF8A65" />{' '}
+              {ele.address}
             </Text>
             <Text style={styles.text}>
               <AntDesign name="calendar" size={14} color="#90CAF9" /> {ele.date}
             </Text>
             <Text style={styles.text}>
-              <AntDesign name="clockcircleo" size={14} color="#FFD54F" /> {ele.time}
+              <AntDesign name="clockcircleo" size={14} color="#FFD54F" />{' '}
+              {ele.time}
             </Text>
             <Text style={styles.text}>
-              <AntDesign name="questioncircleo" size={14} color="#FF7043" /> {ele.who_has_it}
+              <AntDesign name="questioncircleo" size={14} color="#FF7043" />{' '}
+              {ele.who_has_it}
             </Text>
             <Text style={styles.text}>
               <AntDesign name="wallet" size={14} color="#66BB6A" /> ₹{ele.money}
@@ -86,31 +122,52 @@ const WorkDetails = ({ allWorks }: any) => {
               <View
                 style={[
                   styles.statusBox,
-                  ele.completed
+                  ele.workStatus==="Complete"
                     ? { backgroundColor: '#4CAF50' }
-                    : ele.canceled
-                    ? { backgroundColor: '#F44336' }
-                    : { backgroundColor: '#FFC107' },
+                    : ele.workStatus==="Cancel"
+                      ? { backgroundColor: '#F44336' }
+                      : { backgroundColor: '#FFC107' },
                 ]}
               >
+                <AntDesign
+                  name={
+                    ele.workStatus==="Complete"
+                      ? 'checkcircle'
+                      : ele.workStatus==="Cancel"
+                        ? 'closecircle'
+                        : 'clockcircleo'
+                  }
+                  size={14}
+                  color="#fff"
+                />
                 <Text style={styles.statusText}>
-                  {ele.completed
-                    ? <><AntDesign name="checkcircle" size={14} color="#fff" /> Completed</>
-                    : ele.canceled
-                    ? <><AntDesign name="closecircle" size={14} color="#fff" /> Canceled</>
-                    : <><AntDesign name="clockcircleo" size={14} color="#fff" /> Pending</>}
+                  {ele.workStatus==="Complete"
+                    ? ' Completed'
+                    : ele.workStatus==="Cancel"
+                      ? ' Canceled'
+                      : ' Pending'}
                 </Text>
               </View>
 
-              {ele.paymentStatus === 'pending' && ele.completed && (
+              <View style={styles.actionRow}>
+                {ele.paymentStatus === 'pending' && ele.completed && (
+                  <TouchableOpacity
+                    style={styles.updateBtn}
+                    onPress={() => handleUpdatePayment(ele)}
+                  >
+                    <AntDesign name="edit" size={14} color="#fff" />
+                    <Text style={styles.updateText}> Update</Text>
+                  </TouchableOpacity>
+                )}
+
                 <TouchableOpacity
-                  style={styles.updateBtn}
-                  onPress={() => handleUpdatePayment(ele)}
+                  style={styles.deleteBtn}
+                  onPress={() => handleDelete(ele)}
                 >
-                  <AntDesign name="edit" size={14} color="#fff" />
-                  <Text style={styles.updateText}> Update Payment</Text>
+                  <AntDesign name="delete" size={14} color="#fff" />
+                  <Text style={styles.updateText}> Delete</Text>
                 </TouchableOpacity>
-              )}
+              </View>
             </View>
           </View>
         );
@@ -122,7 +179,10 @@ const WorkDetails = ({ allWorks }: any) => {
         visible={showAlert}
         onRequestClose={() => setShowAlert(false)}
       >
-        <InputWithDropdown onClose={() => setShowAlert(false)} element={element} />
+        <InputWithDropdown
+          onClose={() => setShowAlert(false)}
+          element={element}
+        />
       </Modal>
     </ScrollView>
   );
@@ -199,9 +259,22 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     fontSize: 14,
   },
+  actionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
   updateBtn: {
     flexDirection: 'row',
     backgroundColor: '#3949AB',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 6,
+    alignItems: 'center',
+  },
+  deleteBtn: {
+    flexDirection: 'row',
+    backgroundColor: '#D32F2F',
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 6,

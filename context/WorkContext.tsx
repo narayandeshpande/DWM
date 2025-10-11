@@ -7,15 +7,14 @@ type workType = {
         date: string;
         time: string;
         address: string;
-        completed: boolean;
-        canceled: boolean;
+        workStatus: string
 };
 
-type noteType={
-        id:number,
-        heading:string,
-        content:string,
-        date:string
+type noteType = {
+        id: number,
+        heading: string,
+        content: string,
+        date: string
 }
 
 type incomeType = {
@@ -43,9 +42,12 @@ type WorkContextType = {
         updateIncome: (newIncomes: incomeType[]) => Promise<void>,
         updateExpenditure: (newExpenditures: expenditureType[]) => Promise<void>,
         expenditures: expenditureType[],
-        notes:noteType[],
-        getAllNotes:()=>Promise<void>
-        addNote:(newNote:noteType[])=>Promise<void>
+        notes: noteType[],
+        getAllNotes: () => Promise<void>
+        addNote: (newNote: noteType[]) => Promise<void>
+        deleteWork: (workinfo: workType) => void,
+        deleteExpenditure: (expinfo: expenditureType) => void,
+        deleteIncome: (incinfo: incomeType) => void,
 };
 
 export const WorkContext = createContext<WorkContextType>({
@@ -58,9 +60,13 @@ export const WorkContext = createContext<WorkContextType>({
         updateIncome: async () => { },
         updateExpenditure: async () => { },
         expenditures: [],
-        notes:[],
-        addNote:async()=>{},
-        getAllNotes:async()=>{}
+        notes: [],
+        addNote: async () => { },
+        getAllNotes: async () => { },
+        deleteWork: (workinfo) => { },
+        deleteExpenditure: (expinfo) => { },
+        deleteIncome: (incinfo) => { }
+
 
 });
 
@@ -71,7 +77,7 @@ export const WorkProvider = ({ children }: any) => {
         const [canceledWorks, setCanceledWorks] = useState<workType[]>([])
         const [incomes, setIncomes] = useState<incomeType[]>([])
         const [expenditures, setExpenditures] = useState<expenditureType[]>([])
-        const [notes,setNotes]=useState<noteType[]>([])
+        const [notes, setNotes] = useState<noteType[]>([])
 
         // ✅ Load data from AsyncStorage on mount
         useEffect(() => {
@@ -106,21 +112,21 @@ export const WorkProvider = ({ children }: any) => {
         // ✅ Update penddingWorks whenever allWorks changes
         useEffect(() => {
                 const filterPandiingWork = allWorks.filter(
-                        (ele) => !ele.completed && !ele.canceled
+                        (ele) => ele
                 );
                 setPenddingWorks(filterPandiingWork);
 
-                const filterCompleteWork = allWorks.filter((ele) => ele.completed)
+                const filterCompleteWork = allWorks.filter((ele) => ele.workStatus === "Complete")
                 setCompltedWorks(filterCompleteWork)
 
-                const filtercancelWorks = allWorks.filter((ele) => ele.canceled)
+                const filtercancelWorks = allWorks.filter((ele) => ele.workStatus === "Cancel")
                 setCanceledWorks(filtercancelWorks)
 
         }, [allWorks]);
 
         // ✅ Function to update allWorks & AsyncStorage
         const updateAllWorks = async (newWorks: workType[]) => {
-                
+
                 try {
                         await AsyncStorage.setItem('works', JSON.stringify(newWorks));
                         setAllWorks(newWorks);
@@ -148,22 +154,22 @@ export const WorkProvider = ({ children }: any) => {
                 }
         }
 
-        const addNote=async(newNote:noteType[])=>{
-           
+        const addNote = async (newNote: noteType[]) => {
+
                 try {
-                        await AsyncStorage.setItem('notes',JSON.stringify(newNote))
+                        await AsyncStorage.setItem('notes', JSON.stringify(newNote))
                         setNotes(newNote)
-                        
+
                 } catch (error) {
                         console.log("Error in add Note")
                 }
         }
 
-        const getAllNotes=async()=>{
+        const getAllNotes = async () => {
                 try {
-                        const allNotes=await AsyncStorage.getItem('notes')
-                        if(allNotes!=null){
-                                const parseAllNotes:noteType[]=JSON.parse(allNotes)
+                        const allNotes = await AsyncStorage.getItem('notes')
+                        if (allNotes != null) {
+                                const parseAllNotes: noteType[] = JSON.parse(allNotes)
                                 setNotes(parseAllNotes)
                         }
                 } catch (error) {
@@ -171,10 +177,58 @@ export const WorkProvider = ({ children }: any) => {
                 }
         }
 
+        const deleteWork = (workinfo: workType) => {
+                const deleteWork = allWorks.filter((work) => {
+                        if (work.id !== workinfo.id)
+                                return work
+                })
+                setAllWorks(deleteWork)
+                updateAllWorks(deleteWork)
 
+                if (workinfo.workStatus === "Complete") {
+                        const upadtedIncome = incomes.filter((inco) => {
+                                if (inco.id !== workinfo.id)
+                                        return inco
+                        })
+                        setIncomes(upadtedIncome)
+                        updateIncome(upadtedIncome)
+                }
+        }
+
+        const deleteExpenditure = (expinfo: expenditureType) => {
+                const expenditure = expenditures.filter((exp) => {
+                        if (exp.id !== expinfo.id)
+                                return exp
+                })
+                setExpenditures(expenditure)
+                updateExpenditure(expenditure)
+        }
+
+        const deleteIncome = (incinfo: incomeType) => {
+                const isItWork = allWorks.some(income => income.id === incinfo.id)
+                const income = incomes.filter((income) => {
+                        if (income.id !== incinfo.id)
+                                return income
+                })
+                setIncomes(income)
+                updateIncome(income)
+                if (isItWork) {
+                        const works = allWorks.filter((work) => {
+                                if (work.id !== incinfo.id)
+                                        return work
+                        })
+                        setAllWorks(works)
+                        updateAllWorks(works)
+
+                }
+
+        }
 
         return (
-                <WorkContext.Provider value={{ penddingWorks, allWorks, updateAllWorks, completedWorks, canceledWorks, incomes, updateIncome, expenditures, updateExpenditure,notes,addNote,getAllNotes }}>
+                <WorkContext.Provider value={{
+                        penddingWorks, allWorks, updateAllWorks, completedWorks, canceledWorks, incomes, updateIncome, expenditures, updateExpenditure, notes, addNote, getAllNotes, deleteWork, deleteExpenditure, deleteIncome
+
+                }}>
                         {children}
                 </WorkContext.Provider>
         );

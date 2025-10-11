@@ -32,9 +32,6 @@ const months = [
 const MonthList = ({ detailType }: any) => {
   const { allWorks, incomes, expenditures } = useContext(WorkContext);
 
-//    incomes.sort((a: string, b: string) => a.date.localeCompare(b.date))
-console.log(incomes)
-
   const [show, setShow] = useState(false);
   const [forWho, setForWho] = useState('');
   const [total, setTotal] = useState(0);

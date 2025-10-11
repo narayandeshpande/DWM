@@ -60,8 +60,7 @@ const AddWorkModel = ({ setModelVisible, data, edit }: any) => {
       address,
       who_has_it,
       money,
-      completed: false,
-      canceled: false,
+      workStatus:"Pending",
       paymentStatus: 'pending',
     };
 

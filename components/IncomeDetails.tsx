@@ -1,12 +1,21 @@
-import { StyleSheet, Text, View, ScrollView } from 'react-native';
-import React from 'react';
+import {
+  StyleSheet,
+  Text,
+  View,
+  ScrollView,
+  TouchableOpacity,
+  Alert,
+} from 'react-native';
+import React, { useContext } from 'react';
 import AntDesign from 'react-native-vector-icons/AntDesign';
+import { WorkContext } from '../context/WorkContext';
 
-const IncomeDetails = ({ incomes, total }: any) => {
-
-  const sortedIncomes = [...incomes].sort((a, b) => {
-    return new Date(a.date).getTime() - new Date(b.date).getTime();
-  });
+const IncomeDetails = ({ incomes, total}: any) => {
+  const { deleteIncome } = useContext(WorkContext);
+  // Sort incomes by date
+  const sortedIncomes = [...incomes].sort(
+    (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+  );
 
   const getPaymentInfo = (mode: string) => {
     switch (mode.toLowerCase()) {
@@ -17,6 +26,22 @@ const IncomeDetails = ({ incomes, total }: any) => {
       default:
         return { icon: <AntDesign name="questioncircleo" size={16} color="orange" />, label: 'Unknown', color: 'orange' };
     }
+  };
+
+  const handleDelete = (income: any) => {
+    Alert.alert(
+      'Delete Income',
+      'Are you sure you want to delete this income?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: () =>{deleteIncome(income)},
+        },
+      ],
+      { cancelable: true }
+    );
   };
 
   return (
@@ -54,6 +79,15 @@ const IncomeDetails = ({ incomes, total }: any) => {
                 <AntDesign name="checkcircle" size={14} color="#fff" /> Recorded
               </Text>
             </View>
+
+            {/* Delete Button at bottom-right */}
+            <TouchableOpacity
+              style={styles.deleteBtn}
+              onPress={() => handleDelete(income)}
+            >
+              <AntDesign name="delete" size={14} color="#fff" />
+              <Text style={styles.deleteText}> Delete</Text>
+            </TouchableOpacity>
           </View>
         );
       })}
@@ -94,6 +128,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 6,
     elevation: 5,
+    position: 'relative', // Needed for absolute Delete button
   },
   title: {
     fontSize: 20,
@@ -137,5 +172,22 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     color: '#81D4FA',
+  },
+  deleteBtn: {
+    position: 'absolute',
+    bottom: 10,
+    right: 10,
+    flexDirection: 'row',
+    backgroundColor: '#D32F2F',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 6,
+    alignItems: 'center',
+  },
+  deleteText: {
+    color: '#fff',
+    fontWeight: '600',
+    fontSize: 13,
+    marginLeft: 4,
   },
 });

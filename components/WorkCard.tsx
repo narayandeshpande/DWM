@@ -56,14 +56,13 @@ const WorkCard = ({ data }: workType) => {
       if (ele.id === data.id) {
         const updated = {
           ...ele,
-          completed: true,
-          canceled: false,
+          workStatus:"Complete",
           paymentStatus: paymentStatus,
         };
 
         if (paymentStatus !== 'pending') {
           const newIncome = {
-            id: Math.random(),
+            id: data.id,
             name: ele.name,
             amount: ele.money,
             date: ele.date,
@@ -82,7 +81,7 @@ const WorkCard = ({ data }: workType) => {
 
   const handleCancelWork = () => {
     const updatedWorks = allWorks.map((ele: any) =>
-      ele.id === data.id ? { ...ele, canceled: true, completed: false } : ele
+      ele.id === data.id ? { ...ele, workStatus:"Cancel" } : ele
     );
     updateAllWorks(updatedWorks);
     Alert.alert('Cancelled', 'Work has been cancelled.');
@@ -127,47 +126,59 @@ const WorkCard = ({ data }: workType) => {
                 styles.badgeContainer,
                 {
                   backgroundColor:
-                    data?.paymentStatus ?? null === 'pending' ? '#FFF3E0' : '#E8F5E9',
+                    data?.paymentStatus === 'pending' ? '#FFF3E0' : '#E8F5E9',
                 },
               ]}
             >
               <AntDesign
                 name={
-                  data?.paymentStatus ?? null === 'pending'
+                  data?.paymentStatus === 'pending'
                     ? 'exclamationcircle'
                     : 'checkcircle'
                 }
                 size={14}
-                color={data?.paymentStatus ?? null === 'pending' ? '#FB8C00' : '#43A047'}
+                color={data?.paymentStatus === 'pending' ? '#FB8C00' : '#43A047'}
               />
-              <Text
-                style={[
-                  styles.badgeText,
-                  {
-                    color:
-                      data?.paymentStatus ?? null === 'pending' ? '#FB8C00' : '#43A047',
-                  },
-                ]}
-              >
-                {data?.paymentStatus ?? null === 'pending'
-                  ? 'Payment Pending'
-                  : 'Payment Received'}
-              </Text>
+
+              <View>
+                <Text
+                  style={[
+                    styles.badgeText,
+                    {
+                      color:
+                        data?.paymentStatus === 'pending' ? '#FB8C00' : '#43A047',
+                    },
+                  ]}
+                >
+                  {data?.paymentStatus === 'pending'
+                    ? 'Payment Pending'
+                    : 'Payment Received'}
+                </Text>
+
+                {/* Show payment mode only when payment is received */}
+                {data?.paymentStatus === 'cash' || data?.paymentStatus === 'online' ? (
+                  <Text style={{ color: '#616161', fontSize: 12 }}>
+                    Mode: {data?.paymentStatus === 'cash' ? 'Cash' : 'Online'}
+                  </Text>
+                ) : null}
+              </View>
             </View>
+
+
 
             {/* Work Status */}
             <View style={styles.status}>
-              {(data?.completed ?? null) && (
+              {(data.workStatus==="Complete"?true: null) && (
                 <Text style={[styles.statusText, { color: '#4CAF50' }]}>
                   ✅ Work Completed
                 </Text>
               )}
-              {(data?.canceled ?? null) && (
+              {(data.workStatus==="Cancel"?true: null) && (
                 <Text style={[styles.statusText, { color: '#F44336' }]}>
                   ❌ Work Cancelled
                 </Text>
               )}
-              {!(data?.completed ?? "") && !(data?.canceled ?? "") && (
+              {(data.workStatus==="Pending"?true:null) && (
                 <Text style={[styles.statusText, { color: '#FFC107' }]}>
                   🕒 Work Pending
                 </Text>
@@ -175,30 +186,33 @@ const WorkCard = ({ data }: workType) => {
             </View>
 
             {/* Action Buttons */}
-            <View style={styles.buttonRow}>
-              {isTodayOrPast(data?.date ?? null) && !(data?.completed ?? "") && !(data?.canceled ?? "") && (
+            {data.workStatus==="Pending"&&
+
+              <View style={styles.buttonRow}>
+                {isTodayOrPast(data?.date ?? null) && !(data?.completed ?? "") && !(data?.canceled ?? "") && (
+                  <GradientButton
+                    colors={['#66bb6a', '#43a047']}
+                    onPress={() => setShowAlert(true)}
+                    iconName="check"
+                    title="Complete"
+                  />
+                )}
+
                 <GradientButton
-                  colors={['#66bb6a', '#43a047']}
-                  onPress={() => setShowAlert(true)}
-                  iconName="check"
-                  title="Complete"
+                  colors={['#e53935', '#b71c1c']}
+                  onPress={handleCancelWork}
+                  iconName="close"
+                  title="Cancel"
                 />
-              )}
 
-              <GradientButton
-                colors={['#e53935', '#b71c1c']}
-                onPress={handleCancelWork}
-                iconName="close"
-                title="Cancel"
-              />
-
-              <GradientButton
-                colors={['#1e88e5', '#1565c0']}
-                onPress={() => setModelVisible(true)}
-                iconName="edit"
-                title="Edit"
-              />
-            </View>
+                <GradientButton
+                  colors={['#1e88e5', '#1565c0']}
+                  onPress={() => setModelVisible(true)}
+                  iconName="edit"
+                  title="Edit"
+                />
+              </View>
+            }
           </LinearGradient>
 
           {/* Edit Modal */}

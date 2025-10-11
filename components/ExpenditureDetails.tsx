@@ -1,10 +1,11 @@
-import { StyleSheet, Text, View, ScrollView } from 'react-native';
-import React from 'react';
+import { StyleSheet, Text, View, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import React, { useContext } from 'react';
 import AntDesign from 'react-native-vector-icons/AntDesign';
+import { WorkContext } from '../context/WorkContext';
 
-const ExpenditureDetails = ({ expenditures, total }: any) => {
+const ExpenditureDetails = ({ expenditures, total, }: any) => {
+  const { deleteExpenditure } = useContext(WorkContext);
 
-  // Sort expenditures by date (newest first)
   const sortedExpenditures = [...expenditures].sort((a, b) => {
     return new Date(b.date).getTime() - new Date(a.date).getTime();
   });
@@ -12,12 +13,28 @@ const ExpenditureDetails = ({ expenditures, total }: any) => {
   const getPaymentInfo = (mode: string) => {
     switch (mode.toLowerCase()) {
       case 'cash':
-        return { icon: <AntDesign name="wallet" size={16} color="#66BB6A" />, label: 'Cash', color: '#66BB6A' };
+        return { icon: <AntDesign name="wallet" size={16} color="#66BB6A" />, text: 'Cash', color: '#66BB6A' };
       case 'online':
-        return { icon: <AntDesign name="creditcard" size={16} color="#42A5F5" />, label: 'Online', color: '#42A5F5' };
+        return { icon: <AntDesign name="creditcard" size={16} color="#42A5F5" />, text: 'Online', color: '#42A5F5' };
       default:
-        return { icon: <AntDesign name="questioncircleo" size={16} color="orange" />, label: 'Unknown', color: 'orange' };
+        return { icon: <AntDesign name="questioncircleo" size={16} color="orange" />, text: 'Unknown', color: 'orange' };
     }
+  };
+
+  const handleDelete = (item: any) => {
+    Alert.alert(
+      'Delete Expenditure',
+      'Are you sure you want to delete this expenditure?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: () =>{deleteExpenditure(item)},
+        },
+      ],
+      { cancelable: true }
+    );
   };
 
   return (
@@ -28,7 +45,7 @@ const ExpenditureDetails = ({ expenditures, total }: any) => {
       </View>
 
       {sortedExpenditures.length === 0 && (
-        <Text style={styles.textCenter}>
+        <Text style={styles.noDataText}>
           No Expenditure Details are available in this month.
         </Text>
       )}
@@ -38,21 +55,32 @@ const ExpenditureDetails = ({ expenditures, total }: any) => {
 
         return (
           <View key={index} style={styles.card}>
-            <Text style={styles.title}>{item.reason}</Text>
-            <Text style={styles.text}>
-              <AntDesign name="dollar" size={14} color="#EF9A9A" /> Amount: ₹{item.amount}
-            </Text>
-            <Text style={styles.text}>
-              <AntDesign name="calendar" size={14} color="#90CAF9" /> Date: {item.date}
-            </Text>
-            <Text style={[styles.text, { color: payment.color }]}>
-              {payment.icon} Mode: {payment.label}
-            </Text>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.title}>{item.reason}</Text>
+              <Text style={styles.text}>
+                <AntDesign name="dollar" size={14} color="#EF9A9A" /> Amount: ₹{item.amount}
+              </Text>
+              <Text style={styles.text}>
+                <AntDesign name="calendar" size={14} color="#90CAF9" /> Date: {item.date}
+              </Text>
+              <Text style={[styles.text, { color: payment.color }]}>
+                {payment.icon} Mode: {payment.text}
+              </Text>
 
-            <View style={styles.statusBox}>
-              <AntDesign name="checkcircle" size={14} color="#fff" />
-              <Text style={styles.statusText}> Recorded</Text>
+              <View style={styles.statusBox}>
+                <AntDesign name="checkcircle" size={14} color="#fff" />
+                <Text style={styles.statusText}> Recorded</Text>
+              </View>
             </View>
+
+            {/* Delete button at bottom-right */}
+            <TouchableOpacity
+              onPress={() => handleDelete(item)}
+              style={styles.deleteBtn}
+            >
+              <AntDesign name="delete" size={18} color="#fff" />
+              <Text style={styles.deleteText}> Delete</Text>
+            </TouchableOpacity>
           </View>
         );
       })}
@@ -87,22 +115,23 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     marginLeft: 8,
   },
-  textCenter: {
-    color: '#AAAAAA',
+  noDataText: {
+    color: '#CCCCCC',
     fontSize: 16,
+    marginTop: 12,
     textAlign: 'center',
-    marginVertical: 20,
   },
   card: {
     backgroundColor: '#1E1E1E',
-    borderRadius: 12,
-    padding: 15,
+    borderRadius: 14,
+    padding: 16,
     marginBottom: 15,
+    position: 'relative', // for absolute positioning of delete button
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.25,
-    shadowRadius: 5,
-    elevation: 4,
+    shadowOpacity: 0.3,
+    shadowRadius: 6,
+    elevation: 5,
   },
   title: {
     fontSize: 20,
@@ -114,8 +143,6 @@ const styles = StyleSheet.create({
     color: '#CCCCCC',
     fontSize: 15,
     marginBottom: 4,
-    flexDirection: 'row',
-    alignItems: 'center',
   },
   statusBox: {
     marginTop: 10,
@@ -147,5 +174,21 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#EF9A9A',
     marginLeft: 6,
+  },
+  deleteBtn: {
+    position: 'absolute',
+    bottom: 10,
+    right: 10,
+    flexDirection: 'row',
+    backgroundColor: '#D32F2F',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 6,
+    alignItems: 'center',
+  },
+  deleteText: {
+    color: '#fff',
+    fontWeight: '600',
+    fontSize: 13,
   },
 });
