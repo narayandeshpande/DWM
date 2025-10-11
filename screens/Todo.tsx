@@ -128,16 +128,16 @@ const Todo = () => {
             onPress={() => setModalVisible(true)}
           >
             <LinearGradient
-              colors={["#4fc5c5", "#27ae60"]}
+              colors={["#4d4847ff", "#4d4847ff"]}
               style={{
-                width: 36,
-                height: 36,
-                borderRadius: 18,
+                width: 40,
+                height: 40,
+                borderRadius: 10,
                 justifyContent: "center",
                 alignItems: "center",
               }}
             >
-              <AntDesign name="plus" size={20} color="#fff" />
+              <AntDesign name="plus" size={20} color="#e7e9e2ff" />
             </LinearGradient>
           </TouchableOpacity>
         </View>
@@ -219,7 +219,7 @@ const Todo = () => {
 
             <View style={styles.modalButtons}>
               <LinearGradient
-                colors={["#4fc5c5", "#27ae60"]}
+                colors={["#27ae60", "#27ae60"]}
                 style={styles.addBtn}
               >
                 <TouchableOpacity
@@ -229,7 +229,7 @@ const Todo = () => {
                   <AntDesign
                     name="checkcircleo"
                     size={20}
-                    color="#fff"
+                    color="#ebdfdfff"
                     style={{ marginRight: 8 }}
                   />
                   <Text style={styles.btnText}>Add</Text>
@@ -347,9 +347,9 @@ const styles = StyleSheet.create({
   modalContent: { backgroundColor: "#23272f", margin: 24, borderRadius: 26, padding: 25, elevation: 15 },
   modalHeading: { fontSize: 21, color: "#4fc5c5", marginBottom: 19, textAlign: "center", fontWeight: "bold" },
   modalInput: { backgroundColor: "#292b3a", color: "#fff", padding: 15, borderRadius: 12, fontSize: 17, marginBottom: 18 },
-  dateBtn: { flexDirection: "row", alignItems: "center", backgroundColor: "#4fc5c5", padding: 10, borderRadius: 12, marginBottom: 22, justifyContent: "center" },
+  dateBtn: { flexDirection: "row", alignItems: "center", backgroundColor: "#729191ff", padding: 10, borderRadius: 12, marginBottom: 22, justifyContent: "center" },
   modalButtons: { flexDirection: "row", justifyContent: "space-between", gap: 18 },
   addBtn: { flex: 1, borderRadius: 12, justifyContent: "center", alignItems: "center", paddingVertical: 12 },
-  cancelBtn: { flex: 1, flexDirection: "row", justifyContent: "center", alignItems: "center", backgroundColor: "#666", paddingVertical: 12, borderRadius: 12 },
+  cancelBtn: { flex: 1, flexDirection: "row", justifyContent: "center", alignItems: "center", backgroundColor: "#ae1c1cff", paddingVertical: 12, borderRadius: 12 },
   btnText: { color: "#fff", fontSize: 16, fontWeight: "bold" },
 });

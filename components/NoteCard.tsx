@@ -19,7 +19,7 @@ const styles = StyleSheet.create({
   card: {
     height: 180,            // Fixed height for all cards
     // width: '48%',           // Two cards per row as before
-    backgroundColor: '#23272f',
+    backgroundColor: '#121212',
     padding: 16,
     borderRadius: 18,
     shadowColor: '#000',
@@ -35,9 +35,9 @@ const styles = StyleSheet.create({
     
   },
   heading: {
-    color: '#9bf3e3ff',
+    color: '#e4e4e7',
     fontSize: 19,
-    fontWeight: '700',
+    fontWeight: '500',
     marginBottom: 8,
     letterSpacing: 0.2,
     textShadowColor: '#182025',
@@ -56,7 +56,7 @@ const styles = StyleSheet.create({
   text: {
     color: '#e4e4e7',
     fontSize: 15,
-    fontWeight: '400',
+    fontWeight: '300',
     lineHeight: 21,
     opacity: 0.92,
     marginBottom: 10,

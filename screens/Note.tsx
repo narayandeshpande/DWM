@@ -20,15 +20,29 @@ const Note = () => {
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.heading}>Notes</Text>
-        <View style={styles.counterContainer}>
-          <Text style={styles.count}>{notes.length}</Text>
+        <View style={styles.rightHeader}>
+          <View style={styles.counterContainer}>
+            <Text style={styles.count}>{notes.length}</Text>
+          </View>
+
+          {/* Add Note Button (beside count) */}
+          <TouchableOpacity
+            style={styles.addBtn}
+            onPress={() => {
+              setShow(true)
+              setNote(null)
+            }}
+          >
+            <AntDesign name="pluscircle" size={42} color="#9090d2ff" />
+          </TouchableOpacity>
         </View>
       </View>
 
       {/* Notes List */}
       <ScrollView contentContainerStyle={styles.noteList}>
         {notes.map((note, index) => (
-          <TouchableOpacity key={index}
+          <TouchableOpacity
+            key={index}
             onPress={() => {
               setShow(true)
               setNote(note)
@@ -39,16 +53,6 @@ const Note = () => {
           </TouchableOpacity>
         ))}
       </ScrollView>
-
-      {/* Floating Add Button */}
-      <TouchableOpacity style={styles.fab}
-        onPress={() => {
-          setShow(true)
-          setNote(null)
-        }}
-      >
-        <AntDesign name="pluscircle" size={56} color="#00e0b7" style={styles.fabIcon} />
-      </TouchableOpacity>
 
       <Modal
         animationType='slide'
@@ -83,6 +87,11 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     letterSpacing: 0.2,
   },
+  rightHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 14, // space between counter and add button
+  },
   counterContainer: {
     backgroundColor: '#23272f',
     borderRadius: 12,
@@ -98,6 +107,10 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '700',
   },
+  addBtn: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   noteList: {
     flexDirection: "row",
     flexWrap: "wrap",
@@ -105,26 +118,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingBottom: 90,
     gap: 8,
+    backgroundColor:"#121212"
   },
   noteItem: {
-    width: '48%',  // Two items per row with some spacing
+    width: '48%', // Two items per row with some spacing
     marginBottom: 12,
+    
   },
-  fab: {
-    position: 'absolute',
-    right: 20,
-    bottom: 38,
-    backgroundColor: '#23272f',
-    borderRadius: 40,
-    elevation: 8,
-    shadowColor: "#00e0b7",
-    shadowOffset: { width: 0, height: 5 },
-    shadowOpacity: 0.28,
-    shadowRadius: 8,
-    width: 62,
-    height: 62,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  fabIcon: {},
 })
