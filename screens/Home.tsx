@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 import WorkCard from '../components/WorkCard'
 import { WorkContext } from '../context/WorkContext'
 import DateTimePicker from '@react-native-community/datetimepicker'
-
+import { requestNotificationPermission, scheduleAlarm } from '../utils/notificationService';
 type workType = {
         id: number;
         name: string;
@@ -16,15 +16,16 @@ type workType = {
 };
 
 const Home = () => {
-        
+
         const [selectedDate, setSelectedDate] = useState<Date | null>(new Date())
         const [showPicker, setShowPicker] = useState(false)
+
         const [date, setDate] = useState<string | undefined>(new Date().toISOString().split('T')[0])
         const [todaysPendingWorks, setTodaysPendingWorks] = useState<workType[]>([])
         const { allWorks }: any = useContext(WorkContext)
 
         allWorks.sort((a: string, b: string) => a.date.localeCompare(b.date))
-        
+
 
         const onChange = (event: any, date: any) => {
                 if (event.type === 'set') {
@@ -39,6 +40,17 @@ const Home = () => {
         useEffect(() => {
                 if (!date) return;
                 const todays = allWorks.filter((work: any) => work.date === date);
+
+        //         const today = new Date();
+        //         // Create a new Date object for tomorrow
+        //         const tomorrow = new Date(today);
+        //         tomorrow.setDate(today.getDate() + 1);
+        //         const tomorrowdate= tomorrow.toISOString().split('T')[0]
+        //          const tomorrows = allWorks.filter((work: any) => work.date === tomorrowdate);
+
+        //       if(tomorrows.length>0)
+        //                 // scheduleAlarm(10)
+        
                 setTodaysPendingWorks(todays);
         }, [date, allWorks]);
 

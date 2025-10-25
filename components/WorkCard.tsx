@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   View,
   Dimensions,
+  ScrollView,
 } from 'react-native';
 import React, { useContext, useState } from 'react';
 import AddWorkModel from './AddWorkModel';
@@ -13,6 +14,7 @@ import { WorkContext } from '../context/WorkContext';
 import InputWithDropdown from './InputWithDropdown';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import LinearGradient from 'react-native-linear-gradient';
+
 type workType = {
   id: number;
   name: string;
@@ -21,6 +23,11 @@ type workType = {
   address: string;
   completed: boolean;
   canceled: boolean;
+  who_has_it?: string;
+  money?: string;
+  paymentStatus?: string;
+  workStatus?: string;
+  brahmins?: string[];
 };
 
 const { height } = Dimensions.get('window');
@@ -38,13 +45,13 @@ const GradientButton = ({ colors, onPress, iconName, title }) => (
   </TouchableOpacity>
 );
 
-const WorkCard = ({ data }: workType) => {
+const WorkCard = ({ data }: { data: workType }) => {
   const [modelVisible, setModelVisible] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
+  const [showBrahminDropdown, setShowBrahminDropdown] = useState(false);
   const { allWorks, updateAllWorks, updateIncome, incomes }: any =
     useContext(WorkContext);
 
-  // ✅ Compare work date with today's date
   const isTodayOrPast = (workDate: string) => {
     const today = new Date().toISOString().split('T')[0];
     const formattedWorkDate = new Date(workDate).toISOString().split('T')[0];
@@ -56,7 +63,7 @@ const WorkCard = ({ data }: workType) => {
       if (ele.id === data.id) {
         const updated = {
           ...ele,
-          workStatus:"Complete",
+          workStatus: "Complete",
           paymentStatus: paymentStatus,
         };
 
@@ -81,7 +88,7 @@ const WorkCard = ({ data }: workType) => {
 
   const handleCancelWork = () => {
     const updatedWorks = allWorks.map((ele: any) =>
-      ele.id === data.id ? { ...ele, workStatus:"Cancel" } : ele
+      ele.id === data.id ? { ...ele, workStatus: "Cancel" } : ele
     );
     updateAllWorks(updatedWorks);
     Alert.alert('Cancelled', 'Work has been cancelled.');
@@ -89,8 +96,8 @@ const WorkCard = ({ data }: workType) => {
 
   return (
     <>
-      {
-        data ? <View style={styles.wrapper}>
+      {data ? (
+        <View style={styles.wrapper}>
           <LinearGradient colors={['#1C1C1C', '#121212']} style={styles.card}>
             {/* Title */}
             <View style={styles.headerRow}>
@@ -115,6 +122,18 @@ const WorkCard = ({ data }: workType) => {
               <AntDesign name="user" size={16} color="#AB47BC" />
               <Text style={styles.subtext}>{data?.who_has_it ?? ""}</Text>
             </View>
+
+            {/* Brahmin Dropdown */}
+            {data?.brahmins && data.brahmins.length > 0 && (
+              <TouchableOpacity
+                style={styles.brahminDropdownButton}
+                onPress={() => setShowBrahminDropdown(true)}
+              >
+                <Text style={styles.brahminDropdownText}>View Assigned Brahmins</Text>
+                <AntDesign name="down" size={14} color="#FFD54F" />
+              </TouchableOpacity>
+            )}
+
             <View style={styles.infoRow}>
               <AntDesign name="wallet" size={16} color="#FFB300" />
               <Text style={styles.subtext}>₹{data?.money ?? ""}</Text>
@@ -155,7 +174,6 @@ const WorkCard = ({ data }: workType) => {
                     : 'Payment Received'}
                 </Text>
 
-                {/* Show payment mode only when payment is received */}
                 {data?.paymentStatus === 'cash' || data?.paymentStatus === 'online' ? (
                   <Text style={{ color: '#616161', fontSize: 12 }}>
                     Mode: {data?.paymentStatus === 'cash' ? 'Cash' : 'Online'}
@@ -164,21 +182,19 @@ const WorkCard = ({ data }: workType) => {
               </View>
             </View>
 
-
-
             {/* Work Status */}
             <View style={styles.status}>
-              {(data.workStatus==="Complete"?true: null) && (
+              {data.workStatus === "Complete" && (
                 <Text style={[styles.statusText, { color: '#4CAF50' }]}>
                   ✅ Work Completed
                 </Text>
               )}
-              {(data.workStatus==="Cancel"?true: null) && (
+              {data.workStatus === "Cancel" && (
                 <Text style={[styles.statusText, { color: '#F44336' }]}>
                   ❌ Work Cancelled
                 </Text>
               )}
-              {(data.workStatus==="Pending"?true:null) && (
+              {data.workStatus === "Pending" && (
                 <Text style={[styles.statusText, { color: '#FFC107' }]}>
                   🕒 Work Pending
                 </Text>
@@ -186,10 +202,9 @@ const WorkCard = ({ data }: workType) => {
             </View>
 
             {/* Action Buttons */}
-            {data.workStatus==="Pending"&&
-
+            {data.workStatus === "Pending" &&
               <View style={styles.buttonRow}>
-                {isTodayOrPast(data?.date ?? null) && !(data?.completed ?? "") && !(data?.canceled ?? "") && (
+                {isTodayOrPast(data?.date ?? "") && !data?.completed && !data?.canceled && (
                   <GradientButton
                     colors={['#66bb6a', '#43a047']}
                     onPress={() => setShowAlert(true)}
@@ -237,10 +252,37 @@ const WorkCard = ({ data }: workType) => {
               handleCompleteWork={handleCompleteWork}
             />
           </Modal>
-        </View> :
-          <Text>Work not awalable</Text>
-      }
 
+          {/* Brahmin Names Modal */}
+          <Modal
+            animationType="fade"
+            transparent={true}
+            visible={showBrahminDropdown}
+            onRequestClose={() => setShowBrahminDropdown(false)}
+          >
+            <View style={styles.modalOverlay}>
+              <View style={styles.brahminModal}>
+                <Text style={styles.modalTitle}>Assigned Brahmins</Text>
+                <ScrollView style={{ maxHeight: 200 }}>
+                  {data.brahmins?.map((b, index) => (
+                    <Text key={index} style={styles.brahminName}>
+                      {index + 1}. {b}
+                    </Text>
+                  ))}
+                </ScrollView>
+                <TouchableOpacity
+                  style={styles.closeButton}
+                  onPress={() => setShowBrahminDropdown(false)}
+                >
+                  <Text style={styles.closeText}>Close</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </Modal>
+        </View>
+      ) : (
+        <Text>Work not available</Text>
+      )}
     </>
   );
 };
@@ -254,7 +296,7 @@ const styles = StyleSheet.create({
   },
   card: {
     width: '92%',
-    minHeight: height * 0.55, // covers ~55% of screen height
+    minHeight: height * 0.55,
     padding: 22,
     borderRadius: 20,
     backgroundColor: '#121212',
@@ -312,12 +354,10 @@ const styles = StyleSheet.create({
     gap: 8,
     marginTop: 22,
   },
-
   button: {
     flex: 1,
     paddingVertical: 14,
-    paddingHorizontal: 5, // ⬅️ more space for text
-    // margin:10,
+    paddingHorizontal: 5,
     borderRadius: 16,
     alignItems: 'center',
     flexDirection: 'row',
@@ -329,12 +369,63 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 5 },
     shadowRadius: 6,
   },
-
   buttonText: {
     color: 'white',
     fontWeight: '700',
     fontSize: 12,
-    flexShrink: 1,        // ⬅️ ensures text shrinks gracefully if too long
-    textAlign: 'center',  // ⬅️ center align
+    flexShrink: 1,
+    textAlign: 'center',
+  },
+  brahminDropdownButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    padding: 8,
+    backgroundColor: '#2E2E2E',
+    borderRadius: 12,
+    marginVertical: 6,
+    alignSelf: 'flex-start',
+  },
+  brahminDropdownText: {
+    color: '#FFD54F',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  brahminModal: {
+    width: '80%',
+    backgroundColor: '#1C1C1C',
+    borderRadius: 20,
+    padding: 20,
+  },
+  modalTitle: {
+    color: '#FFD54F',
+    fontSize: 18,
+    fontWeight: '700',
+    marginBottom: 12,
+  },
+  brahminName: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    paddingVertical: 6,
+    borderBottomColor: '#333',
+    borderBottomWidth: 1,
+  },
+  closeButton: {
+    marginTop: 12,
+    alignSelf: 'center',
+    backgroundColor: '#FFD54F',
+    borderRadius: 10,
+    paddingHorizontal: 20,
+    paddingVertical: 8,
+  },
+  closeText: {
+    color: '#000',
+    fontWeight: '700',
   },
 });

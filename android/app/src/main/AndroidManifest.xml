@@ -1,8 +1,16 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <!-- Add this permission -->
-    <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+<uses-permission android:name="android.permission.INTERNET"/>
+<uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+<uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+<uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"/>
+<uses-permission android:name="android.permission.WAKE_LOCK" />
+
+
+
+
+
 
     <application
       android:name=".MainApplication"
@@ -17,6 +25,14 @@
       <service android:name="expo.modules.notifications.service.NotificationIntentService"/>
       <receiver android:exported="false" android:name="expo.modules.notifications.service.NotificationReceiver"/>
       <receiver android:exported="false" android:name="expo.modules.notifications.service.NotificationDismissedReceiver"/>
+      
+      <service android:name="com.dieam.reactnativepushnotification.modules.RNPushNotificationListenerService"
+         android:exported="false">
+    <intent-filter>
+        <action android:name="com.google.firebase.MESSAGING_EVENT" />
+    </intent-filter>
+</service>
+
 
       <activity
         android:name=".MainActivity"
