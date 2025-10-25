@@ -7,35 +7,30 @@ import {
   Modal,
   Alert,
 } from 'react-native';
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useState } from 'react';
 import InputWithDropdown from './InputWithDropdown';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import { WorkContext } from '../context/WorkContext';
 
 const WorkDetails = ({ allWorks }: any) => {
-  const [showAlert, setShowAlert] = useState(false);
-  const [element, setElement] = useState(null);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [selectedWork, setSelectedWork] = useState(null);
   const [showBrahminModal, setShowBrahminModal] = useState(false);
   const [selectedBrahmins, setSelectedBrahmins] = useState<string[]>([]);
   const { deleteWork } = useContext(WorkContext);
 
-  const handleUpdatePayment = (item: any) => {
-    setElement(item);
+  const handleUpdatePayment = (work: any) => {
+    setSelectedWork(work);
+    setShowPaymentModal(true);
   };
 
-  const handleDelete = (item: any) => {
+  const handleDelete = (work: any) => {
     Alert.alert(
       'Delete Work',
       'Are you sure you want to delete this work?',
       [
         { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Delete',
-          style: 'destructive',
-          onPress: () => {
-            deleteWork(item)
-          },
-        },
+        { text: 'Delete', style: 'destructive', onPress: () => deleteWork(work) },
       ],
       { cancelable: true }
     );
@@ -46,31 +41,15 @@ const WorkDetails = ({ allWorks }: any) => {
     setShowBrahminModal(true);
   };
 
-  useEffect(() => {
-    if (element) setShowAlert(true);
-  }, [element]);
-
   const getPaymentDisplay = (status: string) => {
     switch (status) {
       case 'cash':
-        return {
-          icon: <AntDesign name="wallet" size={16} color="#66BB6A" />,
-          text: 'Cash',
-          color: '#66BB6A',
-        };
+        return { icon: <AntDesign name="wallet" size={16} color="#66BB6A" />, text: 'Cash', color: '#66BB6A' };
       case 'online':
-        return {
-          icon: <AntDesign name="creditcard" size={16} color="#42A5F5" />,
-          text: 'Online',
-          color: '#42A5F5',
-        };
+        return { icon: <AntDesign name="creditcard" size={16} color="#42A5F5" />, text: 'Online', color: '#42A5F5' };
       case 'pending':
       default:
-        return {
-          icon: <AntDesign name="clockcircleo" size={16} color="orange" />,
-          text: 'Pending',
-          color: 'orange',
-        };
+        return { icon: <AntDesign name="clockcircleo" size={16} color="orange" />, text: 'Pending', color: 'orange' };
     }
   };
 
@@ -86,50 +65,51 @@ const WorkDetails = ({ allWorks }: any) => {
       </View>
 
       {sortedWorks.length === 0 && (
-        <Text style={styles.noDataText}>
-          No Work Details are available in this month.
-        </Text>
+        <Text style={styles.noDataText}>No Work Details are available in this month.</Text>
       )}
 
-      {sortedWorks.map((ele: any, index: number) => {
-        const paymentDisplay = getPaymentDisplay(ele.paymentStatus);
+      {sortedWorks.map((work: any, index: number) => {
+        const paymentDisplay = getPaymentDisplay(work.paymentStatus);
 
         return (
           <View key={index} style={styles.card}>
-            <View style={styles.cardHeader}>
-              <AntDesign name="user" size={18} color="#FFD700" />
-              <Text style={styles.title}>{ele.name}</Text>
+            {/* Top Row: Name + Update Payment Button */}
+            <View style={styles.topRow}>
+              <View style={styles.cardHeader}>
+                <AntDesign name="user" size={18} color="#FFD700" />
+                <Text style={styles.title}>{work.name}</Text>
+              </View>
+              {work.paymentStatus === 'pending' && work.workStatus === 'Complete' && (
+                <TouchableOpacity style={styles.updateBtnTop} onPress={() => handleUpdatePayment(work)}>
+                  <AntDesign name="edit" size={14} color="#fff" />
+                  <Text style={styles.updateText}> Update Payment</Text>
+                </TouchableOpacity>
+              )}
             </View>
 
             <Text style={styles.text}>
-              <AntDesign name="pushpin" size={14} color="#FF8A65" />{' '}
-              {ele.address}
+              <AntDesign name="pushpin" size={14} color="#FF8A65" /> {work.address}
             </Text>
             <Text style={styles.text}>
-              <AntDesign name="calendar" size={14} color="#90CAF9" /> {ele.date}
+              <AntDesign name="calendar" size={14} color="#90CAF9" /> {work.date}
             </Text>
             <Text style={styles.text}>
-              <AntDesign name="clockcircleo" size={14} color="#FFD54F" />{' '}
-              {ele.time}
+              <AntDesign name="clockcircleo" size={14} color="#FFD54F" /> {work.time}
             </Text>
             <Text style={styles.text}>
-              <AntDesign name="questioncircleo" size={14} color="#FF7043" />{' '}
-              {ele.who_has_it}
+              <AntDesign name="questioncircleo" size={14} color="#FF7043" /> {work.who_has_it}
             </Text>
             <Text style={styles.text}>
-              <AntDesign name="wallet" size={14} color="#66BB6A" /> ₹{ele.money}
+              <AntDesign name="wallet" size={14} color="#66BB6A" /> ₹{work.money}
             </Text>
 
             <Text style={[styles.text, { color: paymentDisplay.color }]}>
               {paymentDisplay.icon} Payment: {paymentDisplay.text}
             </Text>
 
-            {/* Brahmin Dropdown Button */}
-            {ele.brahmins && ele.brahmins.length > 0 && (
-              <TouchableOpacity
-                style={styles.brahminButton}
-                onPress={() => handleBrahminPress(ele.brahmins)}
-              >
+            {/* Brahmin Dropdown */}
+            {work.brahmins && work.brahmins.length > 0 && (
+              <TouchableOpacity style={styles.brahminButton} onPress={() => handleBrahminPress(work.brahmins)}>
                 <Text style={styles.brahminText}>View Assigned Brahmins</Text>
                 <AntDesign name="down" size={14} color="#FFD54F" />
               </TouchableOpacity>
@@ -139,18 +119,18 @@ const WorkDetails = ({ allWorks }: any) => {
               <View
                 style={[
                   styles.statusBox,
-                  ele.workStatus === "Complete"
+                  work.workStatus === 'Complete'
                     ? { backgroundColor: '#4CAF50' }
-                    : ele.workStatus === "Cancel"
+                    : work.workStatus === 'Cancel'
                       ? { backgroundColor: '#F44336' }
                       : { backgroundColor: '#FFC107' },
                 ]}
               >
                 <AntDesign
                   name={
-                    ele.workStatus === "Complete"
+                    work.workStatus === 'Complete'
                       ? 'checkcircle'
-                      : ele.workStatus === "Cancel"
+                      : work.workStatus === 'Cancel'
                         ? 'closecircle'
                         : 'clockcircleo'
                   }
@@ -158,58 +138,30 @@ const WorkDetails = ({ allWorks }: any) => {
                   color="#fff"
                 />
                 <Text style={styles.statusText}>
-                  {ele.workStatus === "Complete"
+                  {work.workStatus === 'Complete'
                     ? ' Completed'
-                    : ele.workStatus === "Cancel"
+                    : work.workStatus === 'Cancel'
                       ? ' Canceled'
                       : ' Pending'}
                 </Text>
               </View>
 
-              <View style={styles.actionRow}>
-                {ele.paymentStatus === 'pending' && ele.completed && (
-                  <TouchableOpacity
-                    style={styles.updateBtn}
-                    onPress={() => handleUpdatePayment(ele)}
-                  >
-                    <AntDesign name="edit" size={14} color="#fff" />
-                    <Text style={styles.updateText}> Update</Text>
-                  </TouchableOpacity>
-                )}
-
-                <TouchableOpacity
-                  style={styles.deleteBtn}
-                  onPress={() => handleDelete(ele)}
-                >
-                  <AntDesign name="delete" size={14} color="#fff" />
-                  <Text style={styles.updateText}> Delete</Text>
-                </TouchableOpacity>
-              </View>
+              <TouchableOpacity style={styles.deleteBtn} onPress={() => handleDelete(work)}>
+                <AntDesign name="delete" size={14} color="#fff" />
+                <Text style={styles.updateText}> Delete</Text>
+              </TouchableOpacity>
             </View>
           </View>
         );
       })}
 
-      {/* Payment Update Modal */}
-      <Modal
-        animationType="fade"
-        transparent={true}
-        visible={showAlert}
-        onRequestClose={() => setShowAlert(false)}
-      >
-        <InputWithDropdown
-          onClose={() => setShowAlert(false)}
-          element={element}
-        />
+      {/* Payment Modal */}
+      <Modal animationType="fade" transparent={true} visible={showPaymentModal} onRequestClose={() => setShowPaymentModal(false)}>
+        <InputWithDropdown onClose={() => setShowPaymentModal(false)} element={selectedWork} />
       </Modal>
 
       {/* Brahmin Modal */}
-      <Modal
-        animationType="fade"
-        transparent={true}
-        visible={showBrahminModal}
-        onRequestClose={() => setShowBrahminModal(false)}
-      >
+      <Modal animationType="fade" transparent={true} visible={showBrahminModal} onRequestClose={() => setShowBrahminModal(false)}>
         <View style={styles.modalOverlay}>
           <View style={styles.brahminModal}>
             <Text style={styles.modalTitle}>Assigned Brahmins</Text>
@@ -220,10 +172,7 @@ const WorkDetails = ({ allWorks }: any) => {
                 </Text>
               ))}
             </ScrollView>
-            <TouchableOpacity
-              style={styles.closeBtn}
-              onPress={() => setShowBrahminModal(false)}
-            >
+            <TouchableOpacity style={styles.closeBtn} onPress={() => setShowBrahminModal(false)}>
               <Text style={styles.closeText}>Close</Text>
             </TouchableOpacity>
           </View>
@@ -241,16 +190,16 @@ const styles = StyleSheet.create({
   heading: { fontSize: 26, fontWeight: 'bold', color: '#ffffff', marginLeft: 8 },
   noDataText: { color: '#CCCCCC', fontSize: 16, marginTop: 12, textAlign: 'center' },
   card: { backgroundColor: '#1E1E1E', borderRadius: 14, padding: 16, marginBottom: 15 },
-  cardHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 6 },
+  topRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 },
+  cardHeader: { flexDirection: 'row', alignItems: 'center' },
   title: { fontSize: 20, fontWeight: '600', color: '#ffffff', marginLeft: 6 },
   text: { color: '#CCCCCC', fontSize: 15, marginBottom: 4 },
   bottomRow: { marginTop: 10, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   statusBox: { borderRadius: 20, paddingVertical: 6, paddingHorizontal: 12, flexDirection: 'row', alignItems: 'center' },
   statusText: { color: '#ffffff', fontWeight: '600', fontSize: 14 },
-  actionRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  updateBtn: { flexDirection: 'row', backgroundColor: '#3949AB', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 6, alignItems: 'center' },
-  deleteBtn: { flexDirection: 'row', backgroundColor: '#D32F2F', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 6, alignItems: 'center' },
+  updateBtnTop: { flexDirection: 'row', backgroundColor: '#3949AB', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 6, alignItems: 'center' },
   updateText: { color: '#ffffff', fontWeight: '600', fontSize: 13 },
+  deleteBtn: { flexDirection: 'row', backgroundColor: '#D32F2F', paddingHorizontal: 12, paddingVertical: 6, borderRadius: 6, alignItems: 'center' },
 
   // Brahmin Dropdown Styles
   brahminButton: { flexDirection: 'row', alignItems: 'center', gap: 6, padding: 8, backgroundColor: '#2E2E2E', borderRadius: 12, marginVertical: 6 },

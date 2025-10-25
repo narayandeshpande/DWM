@@ -32,7 +32,7 @@ type workType = {
 
 const { height } = Dimensions.get('window');
 
-const GradientButton = ({ colors, onPress, iconName, title }) => (
+const GradientButton = ({ colors, onPress, iconName, title }:any) => (
   <TouchableOpacity
     onPress={onPress}
     activeOpacity={0.85}
