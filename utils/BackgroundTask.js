@@ -3,35 +3,10 @@ import BackgroundFetch from 'react-native-background-fetch';
 import { scheduleAlarm } from './notificationService';
 
 
-// export default async function BackgroundTask() {
-//         console.log('✅ Background task triggered with Notifee');
-//         // Request permission (first run only)
-//         await notifee.requestPermission();
-
-//         // Create a channel (only once)
-//         const channelId = await notifee.createChannel({
-//                 id: 'default',
-//                 name: 'Default Channel',
-//         });
-
-//         // Show the notification
-//         await notifee.displayNotification({
-//                 title: 'Background Task Running',
-//                 body: 'This notification was shown from background fetch!',
-//                 android: {
-//                         channelId,
-//                         smallIcon: 'ic_launcher', // ensure this icon exists
-//                         pressAction: {
-//                                 id: 'default',
-//                         },
-//                 },
-//         });
-// }
 
 export default async function BackgroundTask() {
-        console.log('✅ BackgroundTask triggered in headless mode');
+        // console.log('✅ BackgroundTask triggered in headless mode')
         let isItDailyTimer = false
-
         const now = new Date();
         const hours = now.getHours();
         const minutes = now.getMinutes();
@@ -44,9 +19,9 @@ export default async function BackgroundTask() {
                 // console.log('🚀 Running scheduleAlarm() in headless mode');
                 await scheduleAlarm("Daily Work Reminder 🔔", "It’s time to review your tasks for tomorrow 📅. Stay prepared and organized 💪✨!"); // works if it’s plain async function
         }
-        
 
-        // Optional notification proof
+
+        // show this notification if need with one varibale is show notification
         if (!isItDailyTimer) {
                 await notifee.displayNotification({
                         title: '⏰ Background check',
@@ -68,7 +43,7 @@ export const initBackgroundTask = async () => {
                         requiredNetworkType: BackgroundFetch.NETWORK_TYPE_NONE,
                 },
                 async (taskId) => {
-                        console.log('[BackgroundFetch] taskId:', taskId);
+                        // console.log('[BackgroundFetch] taskId:', taskId);
                         BackgroundTask()
                         // MUST call finish()
                         BackgroundFetch.finish(taskId);
