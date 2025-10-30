@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { StyleSheet, View, Button } from 'react-native';
+import { StyleSheet } from 'react-native';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { NavigationContainer } from '@react-navigation/native';
@@ -9,39 +9,22 @@ import Note from './screens/Note';
 import Add from './screens/Add';
 import Details from './screens/Details';
 import Home from './screens/Home';
-import { requestNotificationPermission, scheduleAlarm } from './utils/notificationService';
-import { scheduleDailyReminder } from './utils/notificationService';
+import notifee from '@notifee/react-native';
+import {initBackgroundTask} from './utils/BackgroundTask';
 
+import { requestNotificationPermission } from './utils/notificationService';
 
-// ----- Home Screen -----
-
-// Import notification functions
-
-// const Home = () => {
-//   useEffect(() => {
-//     // Request notification permission once when Home mounts
-//     requestNotificationPermission();
-//   }, []);
-
-//   return (
-//     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-//       <Button title="Test Alarm (10 sec)" onPress={() => scheduleAlarm(10)} />
-
-//       <Button title="Test Alarm (1 min)" onPress={() => scheduleAlarm(60)} style={{ marginTop: 10 }} />
-//     </View>
-//   );
-// };
-
-// ----- Bottom Tabs -----
+// ------------------ TAB NAVIGATION ------------------
 const Tab = createBottomTabNavigator();
 
 const App = () => {
 
   useEffect(() => {
     requestNotificationPermission()
-    scheduleDailyReminder()
     // scheduleAlarm(10)
-  }, [])
+    initBackgroundTask();
+  }, []);
+
 
   return (
     <WorkProvider>

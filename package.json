@@ -1,6 +1,6 @@
 {
   "name": "DWM",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "private": true,
   "scripts": {
     "android": "react-native run-android",
@@ -25,6 +25,7 @@
     "expo-notifications": "~0.31.3",
     "react": "19.1.0",
     "react-native": "0.80.0",
+    "react-native-background-fetch": "^4.2.8",
     "react-native-linear-gradient": "^2.8.3",
     "react-native-push-notification": "^8.1.1",
     "react-native-safe-area-context": "^5.4.1",
