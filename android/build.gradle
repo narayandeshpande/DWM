@@ -29,6 +29,6 @@ allprojects {
         mavenCentral()
         maven { url 'https://www.jitpack.io' }
         // 👇 Add this line — required for react-native-background-fetch
-        maven { url("${project(':react-native-background-fetch').projectDir}/libs") }
+        // maven { url("${project(':react-native-background-fetch').projectDir}/libs") }
     }
 }

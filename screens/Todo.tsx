@@ -8,6 +8,7 @@ import {
   FlatList,
   TouchableOpacity,
   Platform,
+  Alert,
 } from "react-native";
 import React, { useState, useEffect } from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -15,13 +16,19 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import AntDesign from "react-native-vector-icons/AntDesign";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import LinearGradient from "react-native-linear-gradient";
+import { NativeModules } from "react-native";
+
+const { AlarmModule } = NativeModules;
 
 type TodoType = {
   id: number;
   description: string;
   completed: boolean;
   notCompleted: boolean;
-  date: string;
+  date: string; // stored as ISO string now (with time)
+  hasTime?: boolean;
+  time:string
+
 };
 
 const Todo = () => {
@@ -30,7 +37,10 @@ const Todo = () => {
   const [modalVisible, setModalVisible] = useState<boolean>(false);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showTimePicker, setShowTimePicker] = useState(false);
+  const [hasTime, setHasTime] = useState<boolean>(false);
 
+  // Load todos from storage
   useEffect(() => {
     const getTodos = async () => {
       try {
@@ -43,6 +53,7 @@ const Todo = () => {
     getTodos();
   }, []);
 
+  // Save todos
   const saveTodos = async (newTodos: TodoType[]) => {
     try {
       await AsyncStorage.setItem("my-todo", JSON.stringify(newTodos));
@@ -52,19 +63,42 @@ const Todo = () => {
     }
   };
 
+  // Add new todo
   const addTodo = async () => {
     if (!todoText.trim()) return;
-    const formattedDate = selectedDate.toISOString().split("T")[0];
+
+    // Store full date + time (always exact local time)
+    const formattedDate = selectedDate.toISOString().split('T')[0];
     const newTodo: TodoType = {
       id: Math.random(),
       description: todoText,
       completed: false,
       notCompleted: false,
       date: formattedDate,
+      hasTime,
+      time: selectedDate.toLocaleTimeString([], {
+            hour: "numeric",
+            minute: "2-digit",
+            hour12: true, 
+          })
     };
+
+    // ✅ Automatically set alarm if user picked time
+    if (hasTime) {
+      const timestamp = selectedDate.getTime();
+      try {
+        AlarmModule.setAlarm(timestamp);
+        console.log("Todo alarm set at:", selectedDate.toLocaleString());
+        Alert.alert("Alarm Set", "⏰ Alarm set for " + selectedDate.toLocaleString());
+      } catch (e) {
+        console.log("Alarm error:", e);
+      }
+    }
+
     saveTodos([...todo, newTodo]);
     setTodoText("");
     setModalVisible(false);
+    setHasTime(false);
     Keyboard.dismiss();
   };
 
@@ -92,17 +126,25 @@ const Todo = () => {
     );
   };
 
-  const filteredTodos = todo.filter(
-    (t) => t.date === selectedDate.toISOString().split("T")[0]
-  );
+  // ✅ Safe filtering for selected date
+  const currentDateString = selectedDate.toISOString().split("T")[0];
+  const filteredTodos = todo.filter((t) => {
+    if (!t.date) return false;
+    try {
+      const todoDate = new Date(t.date);
+      const todoDateString = todoDate.toISOString().split("T")[0];
+      return todoDateString === currentDateString;
+    } catch (err) {
+      console.log("Invalid date in todo:", t.date);
+      return false;
+    }
+  });
 
   const pendingTodos = filteredTodos.filter(
     (t) => !t.completed && !t.notCompleted
   );
   const completedTodos = filteredTodos.filter((t) => t.completed);
   const notCompletedTodos = filteredTodos.filter((t) => t.notCompleted);
-
-  // Combine pending + completed for main list
   const mainTodos = [...pendingTodos, ...completedTodos];
 
   return (
@@ -120,7 +162,8 @@ const Todo = () => {
 
         <View style={{ flexDirection: "row", alignItems: "center" }}>
           <Text style={styles.countText}>
-            <AntDesign name="profile" size={18} color="#fff" /> {pendingTodos.length}
+            <AntDesign name="profile" size={18} color="#fff" />{" "}
+            {pendingTodos.length}
           </Text>
 
           <TouchableOpacity
@@ -143,7 +186,7 @@ const Todo = () => {
         </View>
       </View>
 
-      {/* Main Todos (Pending + Completed) */}
+      {/* Main Todos */}
       {mainTodos.length > 0 && (
         <FlatList
           data={mainTodos}
@@ -160,9 +203,14 @@ const Todo = () => {
         />
       )}
 
-      {/* Not Completed Todos (Separate Section Only if exists) */}
+      {/* Not Completed Todos */}
       {notCompletedTodos.length > 0 && (
-        <View style={[styles.section, { borderTopWidth: 0.5, borderTopColor: "#333" }]}>
+        <View
+          style={[
+            styles.section,
+            { borderTopWidth: 0.5, borderTopColor: "#333" },
+          ]}
+        >
           <FlatList
             data={notCompletedTodos}
             keyExtractor={(item) => item.id.toString()}
@@ -204,18 +252,53 @@ const Todo = () => {
               maxLength={50}
             />
 
-            <TouchableOpacity
-              style={styles.dateBtn}
-              onPress={() => setShowDatePicker(true)}
+            {/* Date + Time Pickers */}
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "space-between",
+              }}
             >
-              <AntDesign
-                name="calendar"
-                size={18}
-                color="#fff"
-                style={{ marginRight: 6 }}
-              />
-              <Text style={styles.btnText}>{selectedDate.toDateString()}</Text>
-            </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.dateBtn, { flex: 1, marginRight: 8 }]}
+                onPress={() => setShowDatePicker(true)}
+              >
+                <AntDesign
+                  name="calendar"
+                  size={18}
+                  color="#fff"
+                  style={{ marginRight: 6 }}
+                />
+                {/* <Text style={styles.btnText}>
+                  {selectedDate.toLocaleDateString("en-GB")}
+                </Text> */}
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[
+                  styles.dateBtn,
+                  { flex: 1, backgroundColor: "#729191" },
+                ]}
+                onPress={() => {
+                  setShowTimePicker(true);
+                  setHasTime(true);
+                }}
+              >
+                <AntDesign
+                  name="clockcircle"
+                  size={18}
+                  color="#fff"
+                  style={{ marginRight: 6 }}
+                />
+                {/* <Text style={styles.btnText}>
+                  {selectedDate.toLocaleTimeString([], {
+                    hour: "numeric",
+                    minute: "2-digit",
+                    hour12: true, // ✅ Show AM/PM
+                  })}
+                </Text> */}
+              </TouchableOpacity>
+            </View>
 
             <View style={styles.modalButtons}>
               <LinearGradient
@@ -265,10 +348,25 @@ const Todo = () => {
           }}
         />
       )}
+
+      {/* Time Picker */}
+      {showTimePicker && (
+        <DateTimePicker
+          value={selectedDate}
+          mode="time"
+          is24Hour={false}
+          display={Platform.OS === "ios" ? "spinner" : "default"}
+          onChange={(event, time) => {
+            setShowTimePicker(false);
+            if (time) setSelectedDate(time);
+          }}
+        />
+      )}
     </SafeAreaView>
   );
 };
 
+// ✅ Todo Item Component
 const TodoItem = ({
   todo,
   deleteTodo,
@@ -279,37 +377,86 @@ const TodoItem = ({
   deleteTodo: (id: number) => void;
   toggleCompleted: (id: number) => void;
   toggleNotCompleted: (id: number) => void;
-}) => (
-  <View
-    style={[
-      styles.todoCard,
-      (todo.completed || todo.notCompleted) && { backgroundColor: "#1e1f26", opacity: 0.7 },
-    ]}
-  >
-    <Text
+}) => {
+  const todoDate = new Date(todo.date);
+  const timeString = todo.hasTime
+    ? todoDate.toLocaleTimeString([], {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    })
+    : "";
+
+  return (
+    <View
       style={[
-        styles.todoText,
-        (todo.completed || todo.notCompleted) && { textDecorationLine: "line-through", color: "#818181" },
+        styles.todoCard,
+        (todo.completed || todo.notCompleted) && {
+          backgroundColor: "#1e1f26",
+          opacity: 0.7,
+        },
       ]}
     >
-      {todo.description}
-    </Text>
+      <View style={{ flex: 1 }}>
+        <Text
+          style={[
+            styles.todoText,
+            (todo.completed || todo.notCompleted) && {
+              textDecorationLine: "line-through",
+              color: "#818181",
+            },
+          ]}
+        >
+          {todo.description}
+        </Text>
 
-    <View style={styles.todoActions}>
-      <TouchableOpacity onPress={() => toggleCompleted(todo.id)} style={styles.actionBtn}>
-        <AntDesign name="checkcircle" size={26} color={todo.completed ? "#4fc5c5" : "#27ae60"} />
-      </TouchableOpacity>
+        {/* 🔔 Alarm Info */}
+        {todo.hasTime && (
+          <View style={styles.alarmInfo}>
+            <AntDesign
+              name="bells"
+              size={14}
+              color="#4fc5c5"
+              style={{ marginRight: 5 }}
+            />
+            <Text style={styles.alarmText}>{todo.time}</Text>
+          </View>
+        )}
+      </View>
 
-      <TouchableOpacity onPress={() => toggleNotCompleted(todo.id)} style={styles.actionBtn}>
-        <AntDesign name="closecircle" size={26} color={todo.notCompleted ? "#4fc5c5" : "#e74c3c"} />
-      </TouchableOpacity>
+      <View style={styles.todoActions}>
+        <TouchableOpacity
+          onPress={() => toggleCompleted(todo.id)}
+          style={styles.actionBtn}
+        >
+          <AntDesign
+            name="checkcircle"
+            size={26}
+            color={todo.completed ? "#4fc5c5" : "#27ae60"}
+          />
+        </TouchableOpacity>
 
-      <TouchableOpacity onPress={() => deleteTodo(todo.id)} style={styles.actionBtn}>
-        <AntDesign name="delete" size={26} color="#f39c12" />
-      </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => toggleNotCompleted(todo.id)}
+          style={styles.actionBtn}
+        >
+          <AntDesign
+            name="closecircle"
+            size={26}
+            color={todo.notCompleted ? "#4fc5c5" : "#e74c3c"}
+          />
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          onPress={() => deleteTodo(todo.id)}
+          style={styles.actionBtn}
+        >
+          <AntDesign name="delete" size={26} color="#f39c12" />
+        </TouchableOpacity>
+      </View>
     </View>
-  </View>
-);
+  );
+};
 
 export default Todo;
 
@@ -343,13 +490,64 @@ const styles = StyleSheet.create({
   todoText: { fontSize: 17, color: "white", flex: 1, flexShrink: 1 },
   todoActions: { flexDirection: "row", alignItems: "center" },
   actionBtn: { marginHorizontal: 6 },
-  modalView: { flex: 1, justifyContent: "center", backgroundColor: "rgba(13,13,22,0.92)" },
-  modalContent: { backgroundColor: "#23272f", margin: 24, borderRadius: 26, padding: 25, elevation: 15 },
-  modalHeading: { fontSize: 21, color: "#4fc5c5", marginBottom: 19, textAlign: "center", fontWeight: "bold" },
-  modalInput: { backgroundColor: "#292b3a", color: "#fff", padding: 15, borderRadius: 12, fontSize: 17, marginBottom: 18 },
-  dateBtn: { flexDirection: "row", alignItems: "center", backgroundColor: "#729191ff", padding: 10, borderRadius: 12, marginBottom: 22, justifyContent: "center" },
-  modalButtons: { flexDirection: "row", justifyContent: "space-between", gap: 18 },
-  addBtn: { flex: 1, borderRadius: 12, justifyContent: "center", alignItems: "center", paddingVertical: 12 },
-  cancelBtn: { flex: 1, flexDirection: "row", justifyContent: "center", alignItems: "center", backgroundColor: "#ae1c1cff", paddingVertical: 12, borderRadius: 12 },
+  modalView: {
+    flex: 1,
+    justifyContent: "center",
+    backgroundColor: "rgba(13,13,22,0.92)",
+  },
+  modalContent: {
+    backgroundColor: "#23272f",
+    margin: 24,
+    borderRadius: 26,
+    padding: 25,
+    elevation: 15,
+  },
+  modalHeading: {
+    fontSize: 21,
+    color: "#4fc5c5",
+    marginBottom: 19,
+    textAlign: "center",
+    fontWeight: "bold",
+  },
+  modalInput: {
+    backgroundColor: "#292b3a",
+    color: "#fff",
+    padding: 15,
+    borderRadius: 12,
+    fontSize: 17,
+    marginBottom: 18,
+  },
+  dateBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#729191ff",
+    padding:12,
+    borderRadius: 12,
+    marginBottom: 22,
+    justifyContent: "center",
+  },
+  modalButtons: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    gap: 18,
+  },
+  addBtn: {
+    flex: 1,
+    borderRadius: 12,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingVertical: 12,
+  },
+  cancelBtn: {
+    flex: 1,
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#ae1c1cff",
+    paddingVertical: 12,
+    borderRadius: 12,
+  },
   btnText: { color: "#fff", fontSize: 16, fontWeight: "bold" },
+  alarmInfo: { flexDirection: "row", alignItems: "center", marginTop: 6 },
+  alarmText: { color: "#a0a0a0", fontSize: 13 },
 });

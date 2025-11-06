@@ -1,58 +1,99 @@
-import notifee from '@notifee/react-native';
-import BackgroundFetch from 'react-native-background-fetch';
-import { scheduleAlarm } from './notificationService';
+import { scheduleAlarm, scheduleNotification } from './notificationService';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
+export async function BackgroundTasks() {
+  try {
+    console.log('✅ BackgroundTask triggered in headless mode');
+    let isItDailyTimer = false;
+    let isItNotification = false;
+    let title = '';
+    let body = '';
+    const date = new Date();
+    const hours = date.getHours();
+    const minutes = date.getMinutes();
+    console.log(`⏰ Time: ${hours}:${minutes}`);
 
+    // daily Reminder logic (example 20:01+)
+    if (hours === 20 && minutes >= 1) {
+      isItDailyTimer = true;
+      console.log('🚀 Running scheduleAlarm() in headless mode');
+      await scheduleAlarm(
+        'Daily Work Reminder 🔔',
+        'It’s time to review your tasks for tomorrow 📅. Stay prepared and organized 💪✨!'
+      );
+    }
 
-export default async function BackgroundTask() {
-        // console.log('✅ BackgroundTask triggered in headless mode')
-        let isItDailyTimer = false
-        const now = new Date();
-        const hours = now.getHours();
-        const minutes = now.getMinutes();
+    // check todos safely
+    let todos = null;
+    try {
+      const raw = await AsyncStorage.getItem('my-todo');
+      if (raw) {
+        // only parse if we have a string
+        todos = JSON.parse(raw);
+      }
+    } catch (err) {
+      console.warn('⚠️ Failed to read/parse todos from AsyncStorage:', err);
+      todos = null;
+    }
 
-        // console.log(`⏰ Time: ${hours}:${minutes}`);
+    const formattedDate = date.toISOString().split('T')[0];
+    const time = date.toLocaleTimeString([], {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    })
 
-        // this is for daily Reminder
-        if (hours === 20 && minutes >= 1) {
-                isItDailyTimer = true
-                // console.log('🚀 Running scheduleAlarm() in headless mode');
-                await scheduleAlarm("Daily Work Reminder 🔔", "It’s time to review your tasks for tomorrow 📅. Stay prepared and organized 💪✨!"); // works if it’s plain async function
+    if (Array.isArray(todos)) {
+      for (const todo of todos) {
+        if (formattedDate === todo.date && !todo.completed && todo.time===time) {
+          isItNotification = true;
+          title = '⏰ Task Reminder';
+        body = `Don't forget: "${todo.description}" is waiting for you.`;
+          break;
         }
+      }
+    }
 
+    // show this notification if needed
+    if (!isItDailyTimer && isItNotification) {
+      await scheduleNotification(title, body);
+    }
 
-        // show this notification if need with one varibale is show notification
-        if (!isItDailyTimer) {
-                await notifee.displayNotification({
-                        title: '⏰ Background check',
-                        body: `Time: ${hours}:${minutes}`,
-                        android: { channelId, smallIcon: 'ic_launcher' },
-                });
-        }
+    return true;
+  } catch (err) {
+    console.error('❌ BackgroundTask error:', err);
+    // swallow error so headless task doesn't crash
+    return false;
+  }
 }
 
-export const initBackgroundTask = async () => {
-        // Configure background fetch
-        BackgroundFetch.configure(
-                {
-                        minimumFetchInterval: 60, // every 1 hours  
-                        forceAlarmManager: true, // ensures frequent execution
-                        stopOnTerminate: false,  // keep running after app is killed
-                        startOnBoot: true,       // auto-start after device reboot
-                        enableHeadless: true,
-                        requiredNetworkType: BackgroundFetch.NETWORK_TYPE_NONE,
-                },
-                async (taskId) => {
-                        // console.log('[BackgroundFetch] taskId:', taskId);
-                        BackgroundTask()
-                        // MUST call finish()
-                        BackgroundFetch.finish(taskId);
-                },
-                (error) => {
-                        console.log('[BackgroundFetch] failed to start:', error);
-                }
-        );
+// export const initBackgroundTask = async () => {
+//   // Configure background fetch
+//   await BackgroundFetch.configure(
+//     {
+//       minimumFetchInterval: 15, // suggest 15 minutes (1 is ignored by OS in release)
+//       forceAlarmManager: true,
+//       stopOnTerminate: false,
+//       startOnBoot: true,
+//       enableHeadless: true,
+//       requiredNetworkType: BackgroundFetch.NETWORK_TYPE_NONE,
+//     },
+//     async (taskId) => {
+//       console.log('[BackgroundFetch] event:', taskId);
+//       try {
+//         // await the work and make sure it completes before finish()
+//         await BackgroundTask();
+//       } catch (e) {
+//         console.log('[BackgroundFetch] BackgroundTask thrown:', e);
+//       } finally {
+//         BackgroundFetch.finish(taskId);
+//       }
+//     },
+//     (error) => {
+//       console.log('[BackgroundFetch] failed to start:', error);
+//     }
+//   );
 
-        // Start background fetch manually
-        BackgroundFetch.start();
-};
+//   // Start background fetch
+//   await BackgroundFetch.start();
+// };

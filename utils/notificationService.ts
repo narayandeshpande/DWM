@@ -1,37 +1,71 @@
-import { Platform, PermissionsAndroid, Alert } from 'react-native';
-import notifee, { AndroidImportance, TriggerType, RepeatFrequency } from '@notifee/react-native';
+import { Platform, PermissionsAndroid } from 'react-native';
+import notifee, { AndroidImportance } from '@notifee/react-native';
+import { NativeModules } from 'react-native';
+const { AlarmModule } = NativeModules as any;
 
 // Request permission (Android 13+)
 export const requestNotificationPermission = async () => {
-        if (Platform.OS === 'android' && Platform.Version >= 33) {
-                const granted = await PermissionsAndroid.request(
-                        PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS,
-                );
+  if (Platform.OS === 'android' && Platform.Version >= 33) {
+    try {
+      const granted = await PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS
+      );
+      console.log('Notification permission:', granted);
+    } catch (err) {
+      console.warn('Permission request error:', err);
+    }
+  }
 
-                console.log('Notification permission:', granted);
-        }
 };
 
-export async function scheduleAlarm(title:string,body:string) {
-        const channelId = await notifee.createChannel({
-                id: 'alarm',
-                name: 'Alarm Channel',
-                importance: AndroidImportance.HIGH,
-                sound: 'alarm', // or 'alarm.mp3' if custom
-                vibration: true,
-        });
+export async function scheduleAlarm(title: string, body: string) {
+  try {
+    const channelId = await notifee.createChannel({
+      id: 'alarm',
+      name: 'Alarm Channel',
+      importance: AndroidImportance.HIGH,
+      sound: 'alarm',
+      vibration: true,
+    });
 
-        await notifee.displayNotification({
-                title: title,
-                body: body,
-                android: {
-                        channelId,
-                        smallIcon: 'ic_launcher',
-                        sound: 'alarm', // ensure you have sound enabled
-                        pressAction: { id: 'default' },
-                },
-        });
+    await notifee.displayNotification({
+      title,
+      body,
+      android: {
+        channelId,
+        smallIcon: 'ic_launcher',
+        sound: 'alarm',
+        pressAction: { id: 'default' },
+      },
+    });
+  } catch (err) {
+    console.warn('⚠️ scheduleAlarm error:', err);
+  }
 }
 
+export async function scheduleNotification(title: string, body: string) {
+  try {
+    const channelId = await notifee.createChannel({
+      id: 'notification',
+      name: 'Notification Channel',
+      importance: AndroidImportance.HIGH,
+      sound: 'notification',
+      vibration: true,
+    });
+
+    await notifee.displayNotification({
+      title,
+      body,
+      android: {
+        channelId,
+        smallIcon: 'ic_launcher',
+        sound: 'notification',
+        pressAction: { id: 'default' },
+      },
+    });
+  } catch (err) {
+    console.warn('⚠️ scheduleNotification error:', err);
+  }
+}
 
 
